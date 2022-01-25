@@ -109,6 +109,32 @@ const Login_strings = {
             cn: "密码长度必须在6-20位之间",
             en: "Password length must be between 6-20"
         }
+    },
+    password_error: {
+        title: {
+            cn: "密码错误 Σ( ° △ °|||)︴",
+            en: "Password error Σ( ° △ °|||)︴"
+        },
+        description: {
+            cn: "密码错误，请重新输入",
+            en: "Password error, please re-enter"
+        }
+    },
+    field_error: {
+        title: {
+            cn: "输入错误 Σ( ° △ °|||)︴",
+            en: "Input error Σ( ° △ °|||)︴"
+        }
+    },
+    session_not_updated: {
+        title: {
+            cn: "登陆失败",
+            en: "Login failed"
+        },
+        description: {
+            cn: "服务器拒绝了本次登陆，请重试",
+            en: "Server rejected this login, please try again"
+        }
     }
 }
 

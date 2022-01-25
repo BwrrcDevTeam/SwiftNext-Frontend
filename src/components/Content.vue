@@ -85,6 +85,8 @@ async function login(title, subtitle) {
   });
   console.log("登录成功!");
 }
+provide("login", login);
+
 // 处理致命错误
 function handle_crucial_error(e) {
   // 把加载框停了
@@ -117,7 +119,8 @@ function handle_crucial_error(e) {
         description: JSON.stringify({
           cn: "远程服务器引起了一个致命错误，请稍后重试，并通知管理员",
           en: "The remote server caused a fatal error, please try again later and notify the administrator",
-        })
+        }),
+        enable_reload: true,
       },
     });
   } else {
@@ -144,7 +147,8 @@ function handle_crucial_error(e) {
         description: JSON.stringify({
           cn: "本地设备产生了一个离谱的错误，请检查网络并稍后重试！",
           en: "The local device has generated an outrageous error, please check the network and try again later!",
-        })
+        }),
+        enable_reload: true,
       },
     });
   }
@@ -174,13 +178,13 @@ onMounted(async () => {
   }
   contacting_server.value = true;
   try {
-    let session = await update_session();
+    let _session = await update_session();
     contacting_server.value = false;
-    session.value = session;
-    if (!session.login && !route.meta.no_auth) {
-      // 这里await一个登陆的弹窗
-      await login(Content_strings.welcome_title, Content_strings.welcome_subtitle)
-    }
+    session.value = _session;
+    // if (!session.login && !route.meta.no_auth) {
+    //   // 这里await一个登陆的弹窗
+    //   await login(Content_strings.welcome_title, Content_strings.welcome_subtitle)
+    // }
   } catch (e) {
     // 无法继续运行 执行handle_crucial_error
     contacting_server.value = null;
@@ -190,42 +194,46 @@ onMounted(async () => {
   contacting_server.value = false;
 });
 
+let first_load = true;
 
+async function is_login() {
+  if (contacting_server.value) {
+    // 联系服务器时，不允许登录
+    // 先等待服务器联系完毕
+    console.log("等待连接服务器...");
+    let result = await new Promise((resolve, reject) => {
+      let id = setInterval(() => {
+        if (contacting_server.value===null) {
+          // 连接服务器失败了，不需要再等了
+          clearInterval(id)
+          resolve(false)
+        }
+        if (contacting_server.value===false) {
+          clearInterval(id)
+          resolve(true)
+        }
 
-function is_login() {
-  let session = JSON.parse(sessionStorage.getItem("session"));
-  return session && session.login;
+      }, 500)
+    });
+    if (!result) {
+    // 连接服务器过程中发生错误 停止正常的路由解析
+      return true;
+    }
+  }
+  return session.value.login;
 }
 router.beforeEach(async (to, from, next) => {
   if (to.meta.no_auth) {
     show_login.value = false;
-  } else if (!is_login()) {
-    if (contacting_server.value) {
-      // 联系服务器时，不允许登录
-      // 先等待服务器联系完毕
-      console.log("等待连接服务器...");
-      let result = await new Promise((resolve, reject) => {
-        let id = setInterval(() => {
-          if (contacting_server.value===null) {
-            // 连接服务器失败了，不需要再等了
-            clearInterval(id)
-            resolve(false)
-          }
-          if (contacting_server.value===false) {
-            clearInterval(id)
-            resolve(true)
-          }
-
-        }, 500)
-      });
-      if (!result) {
-      // 连接服务器过程中发生错误 停止正常的路由解析
-        next()
-        return;
-      }
-    }
+  } else if (! await is_login()) {
     // 等待login结束
-    await login(Content_strings.need_login, Content_strings.need_login_subtitle);
+    if (first_load) {
+      await login(Content_strings.welcome_title, Content_strings.welcome_subtitle);
+      first_load = false;
+    } else {
+      await login(Content_strings.need_login, Content_strings.need_login_subtitle);
+    }
+
   }
   next();
 })

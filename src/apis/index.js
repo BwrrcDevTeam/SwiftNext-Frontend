@@ -1,6 +1,7 @@
 import axios from "axios";
 import {encrypt} from "./system";
-import {check_email} from './users';
+// import {check_email} from './users';
+import users from "./users";
 
 const client = axios.create({
     baseURL: "https://api.imlihe.com/",
@@ -50,7 +51,6 @@ async function update_session() {
     console.log("是否登陆?\t", resp.data.session.login);
     sessionStorage.setItem("session",JSON.stringify(resp.data.session));
     return resp.data.session;
-
 }
 
 export {
@@ -58,7 +58,7 @@ export {
     init_session,
     update_session,
     encrypt,
-    check_email,
+    users,
     log_api,
     log_error
 }

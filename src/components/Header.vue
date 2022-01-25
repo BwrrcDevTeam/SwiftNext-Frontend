@@ -5,31 +5,121 @@
     <div class="config">
       <SiteConfig/>
       <div style="width: 30px;"/>
-      <n-avatar round>
-        <img v-if="session.user" :src="session.user.avatar" :alt="session.user.name"/>
-        <img v-else src='@sicons/carbon/UserAvatarFilled.svg' alt="" class="dummy_avatar">
-      </n-avatar>
+      <n-dropdown v-if="session.hasOwnProperty('user')" :trigger="is_computer? 'hover': 'click'" :options="login_options" @select="handle_select">
+<!--        登录后的用户头像-->
+        <n-avatar round :src="session.user.avatar" v-if="session.user.hasOwnProperty('avatar')">
+        </n-avatar>
+        <n-avatar round v-else>
+          {{session.user.name}}
+        </n-avatar>
+      </n-dropdown>
+      <n-dropdown v-else :trigger="is_computer? 'hover': 'click'" :options="not_login_options" @select="handle_select">
+        <n-avatar round>
+          <UserFilled class="dummy_avatar"/>
+        </n-avatar>
+      </n-dropdown>
     </div>
 
   </div>
 </template>
 
 <script setup>
-import {NSpace, NMenu, NForm, NFormItem, NSelect, NSwitch, NIcon, NAvatar} from 'naive-ui';
-import {inject, h, resolveComponent, ref, getCurrentInstance} from "vue";
-import {get_lang, Header_strings} from "../i18n";
+import {NAvatar, NDropdown, NIcon, NMenu, useNotification} from 'naive-ui';
+import {h, inject, onUnmounted, ref, resolveComponent} from "vue";
+import {Content_strings, Header_strings} from "../i18n";
 import {useRouter} from "vue-router";
 import {Home} from "@vicons/carbon";
 import {Communication24Regular} from "@vicons/fluent";
+import UserFilled from "@vicons/carbon/UserFilled";
 import SiteConfig from "./SiteConfig.vue";
+import {log_api, log_error, update_session, users} from '../apis';
 
 const t = inject("translate");
 const router = useRouter();
 
 const session = inject("session");
 
+function _is_computer() {
+  return window.innerWidth > 800;
+}
 
+let is_computer = ref(_is_computer());
 
+window.onresize = () => {
+  is_computer.value = _is_computer();
+};
+
+onUnmounted(() => {
+  window.onresize = null;
+});
+
+const login_options = [
+  {
+    label: t({
+      cn: "退出",
+      en: "Logout"
+    }),
+    key: 'logout'
+  }
+]
+
+const not_login_options = [
+  {
+    label: t({
+      cn: "登录",
+      en: "Login"
+    }),
+    key: 'login'
+  }
+]
+
+const handle_crucial_error = inject("handle_crucial_error");
+const notification = useNotification();
+const login = inject("login");
+
+async function handle_select(key) {
+  if (key === 'logout') {
+    try {
+      log_api("登出", "Client => Server", "登出当前会话");
+      await users.logout();
+      log_api("登出", "Server => Client", "登出成功");
+      notification.success({
+        title: t({
+          cn: "登出成功",
+          en: "Logout Successfully"
+        }),
+        description: t({
+          cn: "您已成功退出登陆，本地密码已清除",
+          en: "You have successfully logged out, your local password has been cleared"
+        }),
+        duration: 3000
+      });
+      session.value = await update_session();
+    } catch (e) {
+      if (e.response) {
+        if (e.response.data.code === 1) {
+          notification.error({
+            title: t({
+              cn: "登出失败",
+              en: "Logout Failed"
+            }),
+            description: t({
+              cn: "尚未登陆，无法登出",
+              en: "Not logged in, cannot logout"
+            }),
+            duration: 3000
+          });
+        }
+        log_error("Server => Client", e.response.data);
+      } else {
+        handle_crucial_error(e);
+      }
+    }
+
+  } else if (key === 'login') {
+    await login(Content_strings.welcome_title, Content_strings.welcome_subtitle);
+  }
+}
 
 function renderIcon (icon) {
   return () => h(NIcon, null, { default: () => h(icon) })
@@ -108,8 +198,8 @@ const menu_options = [
   }
 
   .dummy_avatar {
-    width: 34px;
-    height: 34px;
+    width: 23px;
+    height: 23px;
     text-align: center;
     vertical-align: middle;
   }

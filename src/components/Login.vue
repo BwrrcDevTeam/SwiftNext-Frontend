@@ -45,17 +45,25 @@
       </div>
       <n-h2 class="username">{{user.name}}</n-h2>
       <div style="height: 30px"></div>
-      <n-input round size="large" :placeholder="t({cn: '密码', en: 'Password'})" v-model:value="password" @keydown.enter="login" :input-props="{type: 'password'}">
+      <n-input round size="large" :placeholder="t({cn: '密码', en: 'Password'})" v-model:value="password" @keydown.enter="login" :input-props="{type: 'password'}" ref="password_area">
         <template #prefix>
           <LockFilled style="height: 20px"/>
         </template>
       </n-input>
+
+
+
       <div style="height: 30px"></div>
       <n-spin :show="login_loading" size="small">
         <login-button class="full" @click="login" :active="login_loading">
           {{t(Login_strings.login)}}
         </login-button>
       </n-spin>
+      <div style="height: 30px"></div>
+      <div style="display: flex;align-items: center; justify-content: left">
+        <span>在此设备上保存密码：</span>
+        <n-switch v-model:value="save_password"></n-switch>
+      </div>
     </n-collapse-transition>
 
 
@@ -81,7 +89,7 @@
 </template>
 
 <script setup>
-import {NCard, NInput, NSpin, NDivider, NSpace, NText, useNotification, NCollapseTransition, NAvatar, NH2} from "naive-ui";
+import {NCard, NInput, NSpin, NDivider, NSpace, NText, useNotification, NCollapseTransition, NAvatar, NH2, NSwitch} from "naive-ui";
 import {inject, ref} from "vue";
 import {Login_strings} from "../i18n";
 import LogoWechat from "@vicons/ionicons5/LogoWechat";
@@ -90,7 +98,7 @@ import UserAvatarFilled from "@vicons/carbon/UserAvatarFilled";
 import LockFilled from "@vicons/material/LockFilled";
 import SiteConfig from "./SiteConfig.vue";
 import LoginButton from "./LoginButton.vue";
-import {check_email, encrypt, log_api, log_error} from "../apis";
+import {users, encrypt, log_api, log_error, update_session} from "../apis";
 
 
 const props = defineProps({
@@ -108,28 +116,58 @@ const handle_crucial_error = inject("handle_crucial_error");
 const continue_loading = ref(false);
 
 const email = ref("");
-// 调试
-const stage = ref("password"); // 登陆的阶段: email, password, wechat
 
-// During Debug !!
-// 只是为了调试
-let user = ref({
-  name: "DummyUser",
-  email: "li@imlihe.com",
-  avatar: "https://tx-free-imgs2.acfun.cn/kimg/bs2/zt-image-host/ChQwOGYwZjgwNzEwYjRmODk4ZDkwMRCYzNcv.png"
-});
+const stage = ref("email"); // 登陆的阶段: email, password, wechat
+let user = ref({});
+
 
 // 所有的登陆方法的最终目的是请求后端的登陆接口，让后端设置session状态
 
+const password_area = ref(null);
+
+const save_password = ref(true);
+
 async function continue_login() {
+  if (continue_loading.value) {
+    return;
+  }
+  if (stage.value !== 'email') {
+    return;
+  }
   continue_loading.value = true;
+  //正则检验邮箱
+  let email_regex = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+  if (!email_regex.test(email.value)) {
+    notification.error({
+      title: t({cn: "邮箱格式不正确", en: "Email format is incorrect"}),
+      description: t({cn: "请输入正确的邮箱格式", en: "Please enter the correct email format"}),
+      duration: 3000
+    });
+    setTimeout(() => {
+      continue_loading.value = false;
+    }, 1000);
+    return;
+  }
+
   log_api("查询邮箱", "Client => Server", "查询当前邮箱用户状态");
-  // todo 请求后端登录接口
   try {
-    let result = await check_email(email.value);
+    let result = await users.check_email(email.value);
     log_api("邮箱查询结果", "Server => Client", result.data);
     user.value = result.data;
     stage.value = "password";
+    setTimeout(() => {
+      // 这里需要延迟一下，否则会因为动画时间导致报错
+      password_area.value.focus();
+      // 这里检查下有没有历史密码记录
+      let saved_password = JSON.parse(localStorage.getItem("saved_password"));
+      if (saved_password) {
+        if (saved_password.hasOwnProperty(email.value)) {
+          // 填入密码
+          // password.value = saved_password[email.value];
+          password.value = "loaded_from_cache";
+        }
+      }
+    }, 500);
   } catch (e) {
     if (e.response) {
       if (e.response.data.code === 1001) {
@@ -153,8 +191,12 @@ async function continue_login() {
 
 const login_loading = ref(false);
 const password = ref("");
+const session = inject("session");
 
 async function login() {
+  if (login_loading.value) {
+    return;
+  }
   login_loading.value = true;
   if (password.value.length < 6 || password.value.length > 20) {
     notification.error({
@@ -162,24 +204,94 @@ async function login() {
       content: t(Login_strings.password_length_error.description),
       duration: 3000
     });
-    login_loading.value = false;
+    setTimeout(() => {
+      login_loading.value = false;
+    }, 1000);
     return;
   }
   let encrypted_password = "";
+  // 检查是否有已保存的密码
+
+  let saved_password = JSON.parse(localStorage.getItem("saved_password"));
+  if (saved_password && saved_password.hasOwnProperty(email.value)) {
+    // 填入密码
+    encrypted_password = saved_password[email.value];
+  } else {
+    try {
+      encrypted_password = await encrypt(password.value);
+      encrypted_password = encrypted_password.data.encrypted;
+    } catch (e) {
+      // 处理不了的错误...
+      handle_crucial_error(e);
+      login_loading.value = false;
+      return;
+    }
+  }
+
+  log_api("登录", "Client => Server", "登录:" + encrypted_password);
   try {
-    encrypted_password = await encrypt(password.value);
-    encrypted_password = encrypted_password.data.encrypted;
-  } catch (e) {
-    // 处理不了的错误...
-    handle_crucial_error(e);
+    let result = await users.login(email.value, encrypted_password);
+    // 刷新session
+    let _session = await update_session();
+    if (_session.login) {
+      session.value = _session;
+      log_api("登录成功", "Server => Client", "登录成功");
+      // 保存密码
+      let saved_password = JSON.parse(localStorage.getItem('saved_password'));
+      if (saved_password === null) {
+        saved_password = {};
+      }
+      saved_password[email.value] =  encrypted_password;
+      localStorage.setItem('saved_password', JSON.stringify(saved_password))
+    } else {
+      log_error("Server => Client", "尽管服务器返回了登录成功，但是session更新失败");
+      notification.error({
+        title: t(Login_strings.session_not_updated.title),
+        content: t(Login_strings.session_not_updated.description),
+        duration: 3000
+      });
+    }
     login_loading.value = false;
     return;
+  } catch (e) {
+    if (e.response) {
+      if (e.response.data.code === 1001) {
+        log_api("登录结果", "Server => Client", "密码错误");
+        notification.error({
+          title: t(Login_strings.password_error.title),
+          content: t(Login_strings.password_error.description),
+          duration: 3000
+        });
+        // 删除保存的密码
+        let saved_password = JSON.parse(localStorage.getItem('saved_password'));
+        if (saved_password === null) {
+          saved_password = {};
+        }
+        if (saved_password.hasOwnProperty(email.value)) {
+          // saved_password.delete(email.value);
+          delete saved_password[email.value];
+        }
+        localStorage.setItem('saved_password', JSON.stringify(saved_password))
+      }
+      if (e.response.data.code === 4) {
+      //  一些字段错误
+        log_api("登录结果", "Server => Client", "字段错误");
+        notification.error({
+          title: t(Login_strings.field_error.title),
+          description: t(e.response.data.message),
+          duration: 3000
+        })
+      }
+      login_loading.value = false;
+
+    } else {
+    //  无法handle的错误
+      login_loading.value = false;
+      handle_crucial_error(e);
+    }
   }
-  log_api("登录", "Client => Server", "登录:" + encrypted_password);
-  // todo 在这里调用后端登录接口
-  setTimeout(() => {
-    login_loading.value = false;
-  }, 1000);
+  login_loading.value = false;
+
 }
 
 

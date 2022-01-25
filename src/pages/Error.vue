@@ -5,7 +5,7 @@
           <template #footer v-if="props.callback">
             <n-button @click="props.callback">{{t(props.callback_text)}}</n-button>
             <span style="padding: 5px;"></span>
-            <n-button secondary @click="re0">{{t(Error_strings.reload)}}</n-button>
+            <n-button secondary @click="re0" v-if="props.enable_reload">{{t(Error_strings.reload)}}</n-button>
           </template>
         </n-result>
       </n-card>
@@ -16,29 +16,53 @@
 <script setup>
 import {NCard, NResult, NButton} from "naive-ui";
 import {inject} from "vue";
-import {useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import {Error_strings} from "../i18n";
 
 const t = inject("translate");
 const route = useRoute();
 
+let outer_props = defineProps({
+  status: {
+      default: undefined,
+  },
+  description: {
+      default: undefined,
+  },
+  title: {
+      default: undefined,
+  },
+  callback: {
+      default: undefined,
+  },
+  callback_text: {
+      default: undefined,
+  },
+  enable_reload: {
+      default: undefined,
+  },
+});
+
+const router = useRouter();
+
 let props = {
-    status: "404",
-    description: {
-        cn: "直接访问 '/error' 并不能制造更多错误",
-        en: "Visiting '/error' will not generates more errors"
-    },
-    title: {
-        cn: "这里啥都没有 w(ﾟДﾟ)w",
-        en: "Nothing here w(ﾟДﾟ)w"
-    },
-    callback_text: {
-        cn: "返回",
-        en: "Back"
-    },
-    callback: () => {
-        window.location.href = "/";
-    }
+  status: "404",
+  description: {
+      cn: "直接访问 '/error' 并不能制造更多错误",
+      en: "Visiting '/error' will not generates more errors"
+  },
+  title: {
+      cn: "这里啥都没有 w(ﾟДﾟ)w",
+      en: "Nothing here w(ﾟДﾟ)w"
+  },
+  callback_text: {
+      cn: "返回首页",
+      en: "Back to home"
+  },
+  callback: () => {
+    router.push({name: "home"});
+  },
+  enable_reload: false
 }
 if (route.query.hasOwnProperty("status")) {
   // 使用传入的参数
@@ -51,6 +75,27 @@ if (route.query.hasOwnProperty("status")) {
   if (props.callback) {
     props.callback = window[props.callback];
   }
+  props.enable_reload = props.enable_reload === "true";
+}
+
+// outer_props 优先度高于 props
+if (outer_props.status) {
+  props.status = outer_props.status;
+}
+if (outer_props.description) {
+  props.description = outer_props.description;
+}
+if (outer_props.title) {
+  props.title = outer_props.title;
+}
+if (outer_props.callback) {
+  props.callback = outer_props.callback;
+}
+if (outer_props.callback_text) {
+  props.callback_text = outer_props.callback_text;
+}
+if (outer_props.enable_reload !== undefined) {
+  props.enable_reload = outer_props.enable_reload;
 }
 
 function re0() {

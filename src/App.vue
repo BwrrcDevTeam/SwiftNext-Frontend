@@ -72,6 +72,5 @@ provide("theme", theme);
     user-select: none;
     -webkit-user-drag: none;
     cursor: default;
-
   }
 </style>
