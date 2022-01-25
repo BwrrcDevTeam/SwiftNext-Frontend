@@ -1,7 +1,11 @@
 <template>
   <div class="main">
-    <div class="logo" @click="router.push({'name': 'home'})">SwiftNext</div>
-    <n-menu class="menu" :options="menu_options"/>
+    <n-icon class="icon_menu" :class="is_computer? 'hide' : 'show'" :size="25">
+      <Close v-if="side_menu_show"></Close>
+      <Menu v-else></Menu>
+    </n-icon>
+    <div class="logo" @click="router.push({'name': 'home_index'})">SwiftNext</div>
+    <n-menu class="menu" :options="menu_options" :value="menu_value"/>
     <div class="config">
       <SiteConfig/>
       <div style="width: 30px;"/>
@@ -28,9 +32,12 @@ import {NAvatar, NDropdown, NIcon, NMenu, useNotification} from 'naive-ui';
 import {h, inject, onUnmounted, ref, resolveComponent} from "vue";
 import {Content_strings, Header_strings} from "../i18n";
 import {useRouter} from "vue-router";
-import {Home} from "@vicons/carbon";
-import {Communication24Regular} from "@vicons/fluent";
+import Home from "@vicons/carbon/Home";
+import Communication24Regular from "@vicons/fluent/Communication24Regular";
 import UserFilled from "@vicons/carbon/UserFilled";
+import Menu from "@vicons/carbon/Menu";
+import Close from "@vicons/carbon/Close";
+
 import SiteConfig from "./SiteConfig.vue";
 import {log_api, log_error, update_session, users} from '../apis';
 
@@ -129,7 +136,7 @@ const menu_options = [
   {
     label: (type, children) => h(resolveComponent("router-link"), {
       to: {
-        name: "home"
+        name: "home_index"
       }
     }, {
       default: () => t(Header_strings.menu.home)
@@ -149,6 +156,20 @@ const menu_options = [
     icon: renderIcon(Communication24Regular)
   }
 ]
+
+const menu_value = ref(null);
+
+router.afterEach((to, from) => {
+  if (to.name.includes("home")) {
+    menu_value.value = "home";
+  } else if (to.name.includes("community")) {
+    menu_value.value = "community";
+  } else {
+    menu_value.value = null;
+  }
+})
+
+const side_menu_show = inject("side_menu_show");
 </script>
 
 <style scoped>
@@ -173,8 +194,16 @@ const menu_options = [
     display: flex;
     width: 100px;
     grid-area: 1 / 1 / 2 / 2;
-    transition: color .2s cubic-bezier(.4, 0, .2, 1);
+    transition: all .2s cubic-bezier(.4, 0, .2, 1);
     user-select: none;
+  }
+
+  .icon_menu.hide {
+    opacity: 0;
+    display: none;
+  }
+  .icon_menu.show {
+    opacity: 1;
   }
   .light .logo {
     color: #000;
@@ -224,10 +253,17 @@ const menu_options = [
       grid-row-gap: 0;
     }
     .logo {
+      opacity: 0;
+      margin-left: -100vw;
+      /*grid-area: 1 / 1 / 2 / 2;*/
+    }
+    .icon_menu {
       grid-area: 1 / 1 / 2 / 2;
     }
     .menu {
       grid-area: 1 / 2 / 2 / 6;
+      justify-content: right;
+
     }
     .config {
       opacity: 0;

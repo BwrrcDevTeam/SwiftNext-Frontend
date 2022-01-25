@@ -9,7 +9,7 @@
           <n-layout-content class="content">
               <router-view/>
           </n-layout-content>
-          <n-layout-footer>
+          <n-layout-footer v-if="route.name && !route.name.includes('home')">
             <Footer/>
           </n-layout-footer>
         </n-scrollbar>
@@ -237,6 +237,9 @@ router.beforeEach(async (to, from, next) => {
   }
   next();
 })
+
+// 为手机端: 提供一个reactive的变量，记录侧滑菜单是否打开
+provide("side_menu_show", ref(false));
 </script>
 
 <style scoped>

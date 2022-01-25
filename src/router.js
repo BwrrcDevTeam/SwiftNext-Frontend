@@ -5,7 +5,25 @@ const routes = [
     {
         path: "/",
         name: "home",
-        component: () => import("./pages/Home.vue")
+        component: () => import("./pages/Home.vue"),
+        children: [
+            {
+                path: "/",
+                name: "home_index",
+                component: () => import("./pages/Home/IndexReport.vue"), // 数据报表页
+            },
+            {
+                path: "/report",
+                name: "home_report",
+                component: () => import("./pages/Home/NewReport.vue"), // 新填报页
+            },
+            {
+                path: "/group",
+                name: "home_group",
+                component: () => import("./pages/Home/MyGroup.vue"), // 我的小组页
+            },
+            // 目前就想到这些
+        ]
     },
     // 错误展示页
     {
