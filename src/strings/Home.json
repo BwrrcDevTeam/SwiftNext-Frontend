@@ -1,3 +1,36 @@
 {
-
+  "index": {
+    "cn": "首页",
+    "en": "Home"
+  },
+  "site_manage": {
+    "cn": "全站管理",
+    "en": "Site Manage"
+  },
+  "reports": {
+    "cn": "填报管理",
+    "en": "Reports"
+  },
+  "group": {
+    "cn": "调查小组",
+    "en": "Group"
+  },
+  "project": {
+    "cn": "调查项目",
+    "en": "Project"
+  },
+  "user_center": {
+    "cn": "用户中心",
+    "en": "User Center"
+  },
+  "perm_error": {
+    "title": {
+      "cn": "权限不足 (°ー°〃) ",
+      "en": "Access denied  (°ー°〃) "
+    },
+    "description": {
+      "cn": "访问这个页面要求更高的权限",
+      "en": "You need a higher permission to access this page"
+    }
+  }
 }

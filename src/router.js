@@ -13,15 +13,23 @@ const routes = [
                 component: () => import("./pages/Home/IndexReport.vue"), // 数据报表页
             },
             {
-                path: "/report",
-                name: "home_report",
-                component: () => import("./pages/Home/NewReport.vue"), // 新填报页
+                path: "/reports",
+                name: "home_reports",
+                component: () => import("./pages/Home/Reports.vue"), // 新填报页
             },
             {
                 path: "/group",
                 name: "home_group",
                 component: () => import("./pages/Home/MyGroup.vue"), // 我的小组页
             },
+            {
+                path: "/site_manage",
+                name: "home_site_manage",
+                component: () => import("./pages/Home/SiteManage.vue"), // 站点管理页(管理员)
+                meta: {
+                    perm: 3,
+                }
+            }
             // 目前就想到这些
         ]
     },
