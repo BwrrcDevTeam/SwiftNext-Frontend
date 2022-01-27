@@ -1,8 +1,11 @@
 <template>
   <div class="main">
-    <n-icon class="icon_menu" :class="is_computer? 'hide' : 'show'" :size="25">
-      <Close v-if="side_menu_show"></Close>
-      <Menu v-else></Menu>
+    <n-icon class="icon_menu" :class="is_computer? 'hide' : 'show'" :size="25" @click="side_menu_show = !side_menu_show">
+      <transition name="fade" mode="out-in">
+        <Close v-if="side_menu_show"></Close>
+        <Menu v-else></Menu>
+      </transition>
+
     </n-icon>
     <div class="logo" @click="router.push({'name': 'home_index'})">SwiftNext</div>
     <n-menu class="menu" :options="menu_options" :value="menu_value"/>
@@ -270,7 +273,23 @@ const side_menu_show = inject("side_menu_show");
       margin-left: 100vw;
     }
   }
-
+  .icon_menu {
+    transition: all .2s cubic-bezier(.4, 0, .2, 1);
+  }
+  .icon_menu:hover {
+    /*color: #62d3ad;*/
+    filter: brightness(.8);
+  }
+  .icon_menu:active {
+    filter: brightness(.5);
+  }
+  .fade-enter-active, .fade-leave-active {
+    transition: all .2s ease-in-out;
+  }
+  .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+    /*opacity: 0;*/
+    filter: brightness(0);
+  }
 </style>
 
 <style>

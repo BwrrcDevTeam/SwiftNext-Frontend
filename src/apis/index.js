@@ -2,6 +2,9 @@ import axios from "axios";
 import {encrypt} from "./system";
 // import {check_email} from './users';
 import users from "./users";
+import records from "./records";
+import notifications from "./notifications";
+import projects from "./projects";
 
 const client = axios.create({
     // baseURL: "https://api.imlihe.com/",
@@ -61,5 +64,8 @@ export {
     encrypt,
     users,
     log_api,
-    log_error
+    log_error,
+    records,
+    notifications,
+    projects
 }

@@ -2,5 +2,33 @@
   "week_overview": {
     "cn": "本周概况",
     "en": "Weekly Overview"
+  },
+  "no_reports_this_week": {
+    "cn": "本周还没有进行任何填报!",
+    "en": "No reports have been made this week!"
+  },
+  "project_overview": {
+    "cn": "项目概况",
+    "en": "Project Overview"
+  },
+  "project_num": {
+    "cn": "全站项目数",
+    "en": "Projects"
+  },
+  "project_reports": {
+    "cn": "全部项目填报数",
+    "en": "Project Reports"
+  },
+  "group_overview": {
+    "cn": "小组概况",
+    "en": "Group Overview"
+  },
+  "notifications": {
+    "cn": "通知",
+    "en": "Notifications"
+  },
+  "no_notifications": {
+    "cn": "没有任何通知",
+    "en": "No notifications"
   }
 }

@@ -1,20 +1,23 @@
 <template>
   <n-layout has-sider class="">
 <!--    侧边菜单-->
-    <n-layout-sider class="side">
+    <n-layout-sider class="side" :class="{'show': side_menu_show, 'hide': !side_menu_show}">
       <n-menu :options="menu_options" :value="menu_active">
 
       </n-menu>
     </n-layout-sider>
 <!--    正文内容-->
-    <n-scrollbar style="height: calc(100vh - 70px)">
-      <n-layout-content>
-        <router-view></router-view>
-      </n-layout-content>
-      <n-layout-footer>
-        <Footer/>
-      </n-layout-footer>
-    </n-scrollbar>
+    <div class="mask" :class="{'show': side_menu_show, 'hide': !side_menu_show}" @click.prevent="side_menu_show = false">
+      <n-scrollbar style="height: calc(100vh - 70px)">
+        <n-layout-content class="content">
+          <router-view></router-view>
+        </n-layout-content>
+        <n-layout-footer class="footer">
+          <Footer/>
+        </n-layout-footer>
+      </n-scrollbar>
+    </div>
+
 
 
   </n-layout>
@@ -58,6 +61,8 @@ const notification = useNotification();
 function renderIcon (icon) {
   return () => h(NIcon, null, { default: () => h(icon) })
 }
+
+const side_menu_show = inject("side_menu_show");
 
 const menu_options = computed(() => {
   let base_options = [ // 所有级别都有的
@@ -164,5 +169,44 @@ router.beforeEach((to, from, next) => {
 </script>
 
 <style scoped>
-
+  .mask, .content, .footer {
+    width: 100%;
+    max-width: 100%;
+  }
+  .content {
+    padding: 15px;
+  }
+  @media screen and (max-width: 800px) {
+    aside {
+      position: absolute;
+      height: calc(100vh - 70px);
+      transition: all 0.3s;
+      z-index: 2;
+    }
+    aside.show {
+      left: 0;
+    }
+    aside.hide {
+      left: -100vw !important;
+    }
+    .mask {
+      width: 100vw;
+      max-width: 100vw;
+      height: calc(100vh - 70px);
+      transition: all .2s ease-in-out;
+    }
+    .mask.show {
+      filter: brightness(0.5);
+    }
+    .mask.hide {
+      filter: brightness(1);
+    }
+    .content {
+      width: 100vw;
+      max-width: 100vw;
+    }
+    .footer {
+      width: 100vw;
+    }
+  }
 </style>

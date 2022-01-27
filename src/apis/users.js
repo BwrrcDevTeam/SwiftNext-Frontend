@@ -15,6 +15,8 @@ function logout() {
     return client.get('/users/logout')
 }
 
+
+
 export default {
     check_email,
     login,
