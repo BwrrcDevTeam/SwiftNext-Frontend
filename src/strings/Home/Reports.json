@@ -2,5 +2,38 @@
   "title": {
     "cn": "新报告",
     "en": "New Report"
+  },
+  "from_images": {
+    "cn": "识别图片",
+    "en": "Detect Images"
+  },
+  "manuel": {
+    "cn": "手动填报",
+    "en": "Manual Report"
+  },
+  "upload_tips": {
+    "cn": "请点击此处或将图片拖拽到此处上传"
+  },
+  "upload_tips_2": {
+    "cn": "上传完毕后，请点击“提交检测”按钮"
+  },
+  "type_error": {
+    "cn": "请上传图片类型文件"
+  },
+  "size_error": {
+    "cn": "图片大小不能超过50M"
+  },
+  "delete_success": {
+    "cn": "删除成功"
+  },
+  "delete_error": {
+    "cn": "删除失败"
+  },
+  "history": {
+    "cn": "历史填报",
+    "en": "History Reports"
+  },
+  "no_image": {
+    "cn": "还没有上传图片"
   }
 }

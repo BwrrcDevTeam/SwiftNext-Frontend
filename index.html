@@ -1,13 +1,54 @@
 <!DOCTYPE html>
 <html lang="en" style="margin: 0; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
-  <head>
-    <meta charset="UTF-8" />
-<!--    <link rel="icon" href="/favicon.ico" />-->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1,maximum-scale=1" />
-    <title>Vite App</title>
-  </head>
-  <body style="margin: 0; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <!--    <link rel="icon" href="/favicon.ico" />-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1,maximum-scale=1" />
+        <title>Vite App</title>
+        <style>
+          .size_tip {
+            position: absolute;
+            width: 100%;
+            top: -300px;
+            z-index: 1000;
+            color: black;
+            text-align: center;
+              font-size: 18px;
+              transition: all .2s;
+
+          }
+            .size_tip>svg {
+              width: 30px;
+              height: 30px;
+            }
+            .size_tip>p{
+              margin-bottom: 5px;
+            }
+          @media screen and (max-width: 350px) {
+            #app {
+              display: none;
+            }
+            .n-modal-container {
+              display: none;
+            }
+            .n-loading-bar-container {
+              display: none;
+            }
+            .size_tip {
+              top: 50%;
+              margin-top: -80px;
+            }
+
+          }
+        </style>
+    </head>
+    <body style="margin: 0; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+        <div class="size_tip">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><polygon points="297.6,48 362.5,112.9 112.9,362.5 48,297.6 48,464 214.4,464 149.5,399.1 399.1,149.5 464,214.4 464,48 "></polygon></svg>
+            <p>窗口宽度不足!</p>
+            <p>Insufficient window width!</p>
+        </div>
+        <div id="app"></div>
+        <script type="module" src="/src/main.js"></script>
+    </body>
 </html>

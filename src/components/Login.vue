@@ -40,7 +40,9 @@
         <n-avatar size="large" round class="avatar" :src="user.avatar" v-if="user.avatar">
         </n-avatar>
         <n-avatar size="large" round class="avatar" v-else>
-          <UserAvatarFilled class="dummy_avatar"/>
+          <n-icon size="50">
+            <UserFilled class="dummy_avatar"/>
+          </n-icon>
         </n-avatar>
       </div>
       <n-h2 class="username">{{user.name}}</n-h2>
@@ -89,16 +91,16 @@
 </template>
 
 <script setup>
-import {NCard, NInput, NSpin, NDivider, NSpace, NText, useNotification, NCollapseTransition, NAvatar, NH2, NSwitch} from "naive-ui";
-import {inject, ref} from "vue";
+import {NCard, NInput, NSpin, NDivider, NSpace, NText, useNotification, NCollapseTransition, NAvatar, NH2, NSwitch, NIcon} from "naive-ui";
+import {inject, onMounted, ref} from "vue";
 import {Login_strings} from "../i18n";
 import LogoWechat from "@vicons/ionicons5/LogoWechat";
 import EmailFilled from "@vicons/material/EmailFilled";
-import UserAvatarFilled from "@vicons/carbon/UserAvatarFilled";
 import LockFilled from "@vicons/material/LockFilled";
 import SiteConfig from "./SiteConfig.vue";
 import LoginButton from "./LoginButton.vue";
 import {users, encrypt, log_api, log_error, update_session} from "../apis";
+import UserFilled from "@vicons/carbon/UserFilled";
 
 
 const props = defineProps({
@@ -155,7 +157,7 @@ async function continue_login() {
     log_api("邮箱查询结果", "Server => Client", result.data);
     user.value = result.data;
     stage.value = "password";
-    setTimeout(() => {
+    setTimeout(async () => {
       // 这里需要延迟一下，否则会因为动画时间导致报错
       password_area.value.focus();
       // 这里检查下有没有历史密码记录
@@ -165,9 +167,13 @@ async function continue_login() {
           // 填入密码
           // password.value = saved_password[email.value];
           password.value = "loaded_from_cache";
+          // 触发登录
+          // 加载动画留着好看～
+          setTimeout(login, 500);
         }
       }
     }, 500);
+
   } catch (e) {
     if (e.response) {
       if (e.response.data.code === 1001) {
@@ -192,6 +198,19 @@ async function continue_login() {
 const login_loading = ref(false);
 const password = ref("");
 const session = inject("session");
+
+onMounted(() => {
+//  检查有没有保存的密码账号，如果有就直接登录
+  let saved_password = JSON.parse(localStorage.getItem("saved_password"));
+  if (saved_password) {
+    for (let key in saved_password) {
+      let enc_password = saved_password[key];
+      email.value = key;
+      continue_login()
+      return;
+    }
+  }
+})
 
 async function login() {
   if (login_loading.value) {

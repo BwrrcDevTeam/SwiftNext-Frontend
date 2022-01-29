@@ -1,5 +1,5 @@
 <script setup>
-import {NConfigProvider, NNotificationProvider, NCard, NLoadingBarProvider,NSpin, NModal, useOsTheme, darkTheme, zhCN, dateZhCN, enUS, dateEnUS} from "naive-ui";
+import {NConfigProvider, NNotificationProvider, NCard, NLoadingBarProvider,NMessageProvider, useOsTheme, darkTheme, zhCN, dateZhCN, enUS, dateEnUS} from "naive-ui";
 import {inject, onMounted, provide, reactive, ref} from "vue";
 import {init_session, log_api, log_error} from "./apis";
 import {useRoute, useRouter} from "vue-router";
@@ -10,6 +10,7 @@ import Content from "./components/Content.vue";
 const t = inject("translate");
 const router = useRouter();
 const route = useRoute();
+
 
 
 function get_theme() {
@@ -39,8 +40,10 @@ provide("theme", theme);
     <n-config-provider :theme="theme === 'dark'? darkTheme : null" :locale="locale" :date-locale="date_locale">
       <n-loading-bar-provider>
         <n-notification-provider>
-  <!--        路由页面-->
-          <Content></Content>
+          <n-message-provider>
+    <!--        路由页面-->
+            <Content></Content>
+          </n-message-provider>
         </n-notification-provider>
       </n-loading-bar-provider>
     </n-config-provider>
@@ -49,8 +52,8 @@ provide("theme", theme);
 
 <style scoped>
   #wrapper {
-    min-height: 100%;
-    min-width: 100%;
+    height: 100%;
+    width: 100%;
     position: absolute;
     user-select: none;
   }
@@ -60,17 +63,30 @@ provide("theme", theme);
   #wrapper.light {
     background-color: #f5f5f5;
   }
+
+
 </style>
 <style>
   * {
     /*禁止拖拽 选中 修改*/
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     user-select: none;
     -webkit-user-drag: none;
-    cursor: default;
+  }
+  input {
+  /*  允许选中*/
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
+  }
+  body {
+    overflow: hidden;
+  }
+  #app {
+    width: 100vw;
+    height: 100vh;
+  }
+  .n-notification-container .n-notification {
+    max-width: 90vw !important;
   }
 </style>

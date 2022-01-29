@@ -66,6 +66,14 @@ const routes = [
         name: "community",
         component: () => import("./pages/Community.vue"),
     },
+    {
+        path: "/dev",
+        name: "dev",
+        component: () => import("./pages/Dev.vue"),
+        meta: {
+            no_auth: true
+        }
+    },
     // 走错了
     {
         path: "/:pathMatch(.*)",
@@ -90,7 +98,9 @@ const routes = [
                 en: "Back to Home"
             }
         }
-    }
+    },
+
+
 ]
 
 export default createRouter({

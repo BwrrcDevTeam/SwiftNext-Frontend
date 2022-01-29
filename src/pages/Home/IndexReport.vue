@@ -4,8 +4,13 @@
     <n-grid-item>
       <n-card :title="t(strings.week_overview)">
         <!--        本周已进行 n 次调查 / 本周尚未进行任何调查填报-->
-        <n-alert type="info" v-if="week_reports.length===0">
-          {{ t(strings.no_reports_this_week) }}
+        <n-alert type="info" v-if="week_reports.length===0" :title="t(strings.no_reports_this_week.title)" @click="router.push({'name': 'home_reports'})" class="clickable">
+          <template #icon>
+            <n-icon>
+              <ContentPasteOffOutlined/>
+            </n-icon>
+          </template>
+          {{ t(strings.no_reports_this_week.description) }}
         </n-alert>
       </n-card>
     </n-grid-item>
@@ -31,14 +36,23 @@
     <n-grid-item>
 <!--      调查小组信息-->
       <n-card :title="t(strings.group_overview)">
-
+        <n-alert type="warning" v-if="!session.user.hasOwnProperty('group_id')" :title="t(strings.no_group.title)" class="clickable" @click="router.push({name: 'home_group'})">
+          <template #icon>
+            <n-icon>
+              <GroupOffOutlined/>
+            </n-icon>
+          </template>
+          {{ t(strings.no_group.description) }}
+        </n-alert>
       </n-card>
     </n-grid-item>
     <n-grid-item>
 <!--      通知-->
       <n-card :title="t(strings.notifications)">
-        <n-alert type="default" v-if="notifications.length===0">
+        <n-alert type="default" v-if="notifications.length===0" :show-icon="false">
+
           {{ t(strings.no_notifications) }}
+
         </n-alert>
       </n-card>
     </n-grid-item>
@@ -46,10 +60,17 @@
 </template>
 
 <script setup>
-import {NGrid, NGridItem, NCard, useNotification, NAlert, NStatistic, NRow, NCol, NNumberAnimation} from 'naive-ui';
+import {NGrid, NGridItem, NCard, useNotification, NAlert, NStatistic, NRow, NCol, NNumberAnimation, NIcon} from 'naive-ui';
 import strings from "../../strings/Home/IndexReport.json";
 import {inject, onMounted, ref} from "vue";
 import {records, notifications as notify_api, projects as projects_api, log_api, log_error} from "../../apis"
+
+import GroupOffOutlined from "@vicons/material/GroupOffOutlined";
+import ContentPasteOffOutlined from "@vicons/material/ContentPasteOffOutlined";
+import {useRouter} from "vue-router";
+
+
+const router = useRouter();
 
 const t = inject("translate");
 const session = inject("session");
@@ -79,5 +100,14 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
+  .clickable {
+    cursor: pointer !important;
+    transition: all .2s ease-in-out;
+  }
+  .clickable:hover {
+    filter: brightness(0.9);
+  }
+  .clickable:active {
+    filter: brightness(0.8);
+  }
 </style>

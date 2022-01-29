@@ -7,8 +7,8 @@
       </n-menu>
     </n-layout-sider>
 <!--    正文内容-->
-    <div class="mask" :class="{'show': side_menu_show, 'hide': !side_menu_show}" @click.prevent="side_menu_show = false">
-      <n-scrollbar style="height: calc(100vh - 70px)">
+    <div class="mask" :class="{'show': side_menu_show, 'hide': !side_menu_show}" @click.prevent="side_menu_show = false" @scroll.prevent="null">
+      <n-scrollbar>
         <n-layout-content class="content">
           <router-view></router-view>
         </n-layout-content>
@@ -42,7 +42,9 @@ import strings from "../strings/Home.json";
 import Home from "@vicons/carbon/Home";
 import Settings from "@vicons/carbon/Settings";
 import Report from "@vicons/carbon/Report";
+import ContentPasteOutlined from "@vicons/material/ContentPasteOutlined";
 import TeamOutlined from "@vicons/antd/TeamOutlined";
+import GroupOutlined from "@vicons/material/GroupOutlined";
 
 import {RouterLink, RouterView} from 'vue-router';
 
@@ -97,7 +99,7 @@ const menu_options = computed(() => {
             }
         ),
       key: "home_reports",
-      icon: renderIcon(Report),
+      icon: renderIcon(ContentPasteOutlined),
     },
     {
       label: () =>
@@ -113,7 +115,7 @@ const menu_options = computed(() => {
             }
         ),
       key: "home_group",
-      icon: renderIcon(TeamOutlined),
+      icon: renderIcon(GroupOutlined),
     },
   ]
   if (session.value.permission === 3) {
@@ -200,6 +202,7 @@ router.beforeEach((to, from, next) => {
     }
     .mask.hide {
       filter: brightness(1);
+      pointer-events: none;
     }
     .content {
       width: 100vw;

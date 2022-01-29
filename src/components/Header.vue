@@ -87,6 +87,8 @@ const handle_crucial_error = inject("handle_crucial_error");
 const notification = useNotification();
 const login = inject("login");
 
+const reload = inject("reload");
+
 async function handle_select(key) {
   if (key === 'logout') {
     try {
@@ -104,7 +106,9 @@ async function handle_select(key) {
         }),
         duration: 3000
       });
+      localStorage.removeItem("saved_password");
       session.value = await update_session();
+      reload()
     } catch (e) {
       if (e.response) {
         if (e.response.data.code === 1) {
@@ -249,11 +253,16 @@ const side_menu_show = inject("side_menu_show");
   }
   @media screen and (max-width: 800px) {
     .main {
+      /*display: grid;*/
+      /*grid-template-columns: 150px repeat(4, 1fr);*/
+      /*grid-template-rows: 1fr;*/
+      /*grid-column-gap: 0;*/
+      /*grid-row-gap: 0;*/
       display: grid;
-      grid-template-columns: 150px repeat(4, 1fr);
+      grid-template-columns: 150px 1fr;
       grid-template-rows: 1fr;
-      grid-column-gap: 0;
-      grid-row-gap: 0;
+      grid-column-gap: 0px;
+      grid-row-gap: 0px;
     }
     .logo {
       opacity: 0;
@@ -264,8 +273,9 @@ const side_menu_show = inject("side_menu_show");
       grid-area: 1 / 1 / 2 / 2;
     }
     .menu {
-      grid-area: 1 / 2 / 2 / 6;
+      grid-area: 1 / 2 / 2 / 3;
       justify-content: right;
+      width: max-content;
 
     }
     .config {

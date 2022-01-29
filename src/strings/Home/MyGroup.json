@@ -1,0 +1,32 @@
+{
+  "joined": {
+    "cn": "加入的小组"
+  },
+  "join": {
+    "cn": "加入小组"
+  },
+  "no_group": {
+    "title": {
+      "cn": "您还没有加入任何调查小组！",
+      "en": "You are not in any groups!"
+    },
+    "description": {
+      "cn": "点击加入一个调查小组!",
+      "en": "Click here to join a group!"
+    }
+  },
+  "no_manageable": {
+    "title": {
+      "cn": "您还没有管理任何一个小组！"
+    },
+    "description": {
+      "cn": "点击创建或者接管一个调查小组!"
+    }
+  },
+  "managed": {
+    "cn": "管理的小组"
+  },
+  "create": {
+    "cn": "创建小组"
+  }
+}

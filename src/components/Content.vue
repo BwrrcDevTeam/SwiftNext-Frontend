@@ -7,7 +7,7 @@
         <Modals v-model:show_admin_contact="show_admin_contact" :full_traceback="full_traceback" :login_text="login_text" v-model:show_login="show_login"/>
         <n-scrollbar v-if="true" style="max-height: calc(100vh - 70px)">
           <n-layout-content class="content">
-              <router-view/>
+              <router-view v-if="show_page"/>
           </n-layout-content>
           <n-layout-footer v-if="route.name && !route.name.includes('home')">
             <Footer/>
@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import {computed, getCurrentInstance, inject, onMounted, provide, reactive, ref} from "vue";
+import {computed, getCurrentInstance, inject, nextTick, onMounted, provide, reactive, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {useLoadingBar, NLayout, NLayoutHeader,NLayoutContent, NLayoutFooter, NSpin, NScrollbar} from "naive-ui";
 import Header from "./Header.vue";
@@ -32,6 +32,8 @@ const loading_bar = useLoadingBar();
 const router = useRouter();
 const route = useRoute();
 const t = inject("translate");
+
+const show_page = ref(true);
 
 router.beforeEach((to, from, next) => {
   loading_bar.start();
@@ -240,10 +242,19 @@ router.beforeEach(async (to, from, next) => {
 
 // 为手机端: 提供一个reactive的变量，记录侧滑菜单是否打开
 provide("side_menu_show", ref(false));
+
+// 刷新页面
+provide("reload", () => {
+  show_page.value = false;
+  nextTick(() => {
+    show_page.value = true;
+  })
+})
 </script>
 
 <style scoped>
 .content {
   min-height: calc(100vh - 70px);
+  width: 100vw;
 }
 </style>

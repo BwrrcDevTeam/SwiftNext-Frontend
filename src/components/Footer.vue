@@ -33,6 +33,7 @@ import SiteConfig from "./SiteConfig.vue";
   .main {
     height: 200px;
     padding: 40px;
+    max-width: 100vw;
   }
   a {
     text-decoration: none;

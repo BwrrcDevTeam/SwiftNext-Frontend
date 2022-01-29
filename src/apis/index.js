@@ -5,12 +5,16 @@ import users from "./users";
 import records from "./records";
 import notifications from "./notifications";
 import projects from "./projects";
+import groups from "./groups";
+import storage from "./storage"
 
-const client = axios.create({
-    // baseURL: "https://api.imlihe.com/",
-    baseURL: "http://localhost:8000/",
+const config = {
+    baseURL: "https://api.imlihe.com/",
+    // baseURL: "http://localhost:8000/",
     timeout: 10000,
-})
+}
+
+const client = axios.create(config)
 
 // Colorful的调试信息! ╰(*°▽°*)╯
 // API动作的颜色
@@ -65,7 +69,10 @@ export {
     users,
     log_api,
     log_error,
+    config,
     records,
     notifications,
-    projects
+    projects,
+    groups,
+    storage
 }

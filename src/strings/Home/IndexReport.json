@@ -4,8 +4,15 @@
     "en": "Weekly Overview"
   },
   "no_reports_this_week": {
-    "cn": "本周还没有进行任何填报!",
-    "en": "No reports have been made this week!"
+    "title": {
+      "cn": "本周还没有进行任何填报!",
+      "en": "No reports have been made this week!"
+    },
+    "description": {
+      "cn": "点击查看历史报告或新建填报！",
+      "en": "Click to view the history or create a new report!"
+    }
+
   },
   "project_overview": {
     "cn": "项目概况",
@@ -23,12 +30,22 @@
     "cn": "小组概况",
     "en": "Group Overview"
   },
+  "no_group": {
+    "title": {
+      "cn": "您还没有加入任何调查小组！",
+      "en": "You are not in any groups!"
+    },
+    "description": {
+      "cn": "点击进入小组页面, 加入一个调查小组!",
+      "en": "Click here to join a group!"
+    }
+  },
   "notifications": {
     "cn": "通知",
     "en": "Notifications"
   },
   "no_notifications": {
-    "cn": "没有任何通知",
+    "cn": "没有收到任何通知",
     "en": "No notifications"
   }
 }

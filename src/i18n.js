@@ -132,8 +132,8 @@ const Login_strings = {
             en: "Login failed"
         },
         description: {
-            cn: "服务器拒绝了本次登陆，请重试",
-            en: "Server rejected this login, please try again"
+            cn: "本地设备似乎不愿意修改登录信息，请重试或更换浏览器！",
+            en: "The local device seems reluctant to modify the login information, please try again or change browsers!"
         }
     }
 }
