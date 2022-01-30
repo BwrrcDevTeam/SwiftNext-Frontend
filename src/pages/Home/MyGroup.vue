@@ -81,7 +81,7 @@
       </n-button>
     </template>
 <!--    管理的小组-->
-    <n-alert type="warning" v-if="!session.user.hasOwnProperty('group_id')" :title="t(strings.no_group.title)" class="clickable" @click="show_create_group=true">
+    <n-alert type="warning" v-if="managed_groups.length===0" :title="t(strings.no_group.title)" class="clickable" @click="show_create_group=true">
       <template #icon>
         <n-icon>
           <EditOffOutlined/>
@@ -89,6 +89,7 @@
       </template>
       {{ t(strings.no_manageable.description) }}
     </n-alert>
+    <GroupCard v-else :group_id="group.id" v-for="group in managed_groups" manageable/>
 
   </n-card>
 </template>

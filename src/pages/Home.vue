@@ -7,8 +7,8 @@
       </n-menu>
     </n-layout-sider>
 <!--    正文内容-->
-    <div class="mask" :class="{'show': side_menu_show, 'hide': !side_menu_show}" @click.prevent="side_menu_show = false" @scroll.prevent="null">
-      <n-scrollbar>
+<!--    <div class="mask" :class="{'show': side_menu_show, 'hide': !side_menu_show}" @click.prevent="side_menu_show = false" @scroll.prevent="null">-->
+      <n-scrollbar style="height: calc(100vh - 70px);">
         <n-layout-content class="content">
           <router-view></router-view>
         </n-layout-content>
@@ -16,7 +16,7 @@
           <Footer/>
         </n-layout-footer>
       </n-scrollbar>
-    </div>
+<!--    </div>-->
 
 
 
@@ -178,6 +178,19 @@ router.beforeEach((to, from, next) => {
   .content {
     padding: 15px;
   }
+  .mask {
+    width: 100vw;
+    max-width: 100vw;
+    height: calc(100vh - 70px);
+    transition: all .2s ease-in-out;
+  }
+  .mask.show {
+    filter: brightness(0.5);
+  }
+  .mask.hide {
+    filter: brightness(1);
+    /*width: 0;*/
+  }
   @media screen and (max-width: 800px) {
     aside {
       position: absolute;
@@ -191,19 +204,7 @@ router.beforeEach((to, from, next) => {
     aside.hide {
       left: -100vw !important;
     }
-    .mask {
-      width: 100vw;
-      max-width: 100vw;
-      height: calc(100vh - 70px);
-      transition: all .2s ease-in-out;
-    }
-    .mask.show {
-      filter: brightness(0.5);
-    }
-    .mask.hide {
-      filter: brightness(1);
-      pointer-events: none;
-    }
+
     .content {
       width: 100vw;
       max-width: 100vw;

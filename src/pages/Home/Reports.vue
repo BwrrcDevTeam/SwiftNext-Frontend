@@ -35,20 +35,24 @@
         <n-button type="info" size="large" secondary v-if="image_list.length > 0" style="margin-top: 20px;" @click="detect_and_create">提交检测</n-button>
       </n-upload>
     </transition>
-    <NewReport v-if="stage==='filling'" :default_detect_list="detect_list"></NewReport>
+    <n-collapse-transition :show="stage==='filling'">
+      <NewReport :default_detect_list="detect_list"></NewReport>
+    </n-collapse-transition>
 
   </n-card>
-  <n-card :title="t(strings.history)" style="margin-top: 20px;">
-    <div style="display: flex;justify-content: center;width: 100%; height: 200px;align-content: center;flex-direction: column">
-      <n-empty size="huge" style="height: fit-content;">
-      </n-empty>
-    </div>
+  <n-collapse-transition :show="stage!=='filling'">
+    <n-card :title="t(strings.history)" style="margin-top: 20px;">
+      <div style="display: flex;justify-content: center;width: 100%; height: 200px;align-content: center;flex-direction: column">
+        <n-empty size="huge" style="height: fit-content;">
+        </n-empty>
+      </div>
+    </n-card>
+  </n-collapse-transition>
 
-  </n-card>
 </template>
 
 <script setup>
-import {NButton, NCard, NEl, NEmpty, NIcon, NP, NSpace, NText, NUpload, NUploadDragger, useMessage} from 'naive-ui'
+import {NButton, NCard, NEl, NEmpty, NIcon, NP, NSpace, NText, NUpload, NUploadDragger, useMessage, NCollapseTransition} from 'naive-ui'
 import {inject, onMounted, onUnmounted, ref} from "vue";
 import strings from "../../strings/Home/Reports.json";
 import NewReport from "./NewReport.vue";

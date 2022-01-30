@@ -5,14 +5,14 @@
 
     <template #cover>
       <div v-if="!manageable">
-        <img :src="storage.get_inline_url(group.cover)" v-if="group.hasOwnProperty('cover')" class="cover-img">
+        <img :src="storage.get_inline_url(group.cover)" v-if="group.hasOwnProperty('cover') && group.cover" class="cover-img">
         <div v-else style="height: 300px; width: 100%;" class="mask">
           <PointedMap  :points="points" style="height: 300px; width: 100%;" disabled></PointedMap>
         </div>
       </div>
       <div v-else @mouseover="show_edit_cover=true" @mouseleave="show_edit_cover=false">
 
-        <img :src="storage.get_inline_url(group.cover)" v-if="group.hasOwnProperty('cover')" class="cover-img">
+        <img :src="storage.get_inline_url(group.cover)" v-if="group.hasOwnProperty('cover') && group.cover" class="cover-img" :class="{blur: show_edit_cover}">
         <div v-else style="height: 300px; width: 100%;" class="mask">
           <PointedMap  :points="points" style="height: 300px; width: 100%;" disabled></PointedMap>
         </div>
@@ -20,7 +20,7 @@
           <n-upload :action="storage.get_upload_url()" accept="image/*" :on-finish="cover_upload_finish" :on-error="cover_upload_error" with-credentials :show-file-list="false">
             <n-button text type="primary">上传</n-button>
           </n-upload>
-          <n-button text type="error">删除</n-button>
+          <n-button text type="error" @click="delete_cover">删除</n-button>
         </n-space>
       </div>
 
@@ -157,6 +157,12 @@ async function cover_upload_error({ file, event }) {
     content: "请检查网络连接",
   })
 }
+
+async function delete_cover() {
+  group.value = (await client.patch("/groups/"+props.group_id, {
+    cover: null,
+  })).data
+}
 </script>
 
 <style scoped>
@@ -175,7 +181,11 @@ async function cover_upload_error({ file, event }) {
    backdrop-filter: brightness(1);
    opacity: 0;
  }
+ .blur {
+   filter: blur(5px) brightness(0.5);
+ }
  .cover-img {
+   transition: all .2s;
    width: 100%;
    height: 300px;
    object-fit: cover;

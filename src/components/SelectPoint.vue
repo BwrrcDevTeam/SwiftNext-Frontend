@@ -1,29 +1,13 @@
 <template>
 <!--  点标记地图-->
-  <div class="container" :class="{hide: switching_theme, disabled: props.disabled}" ref="container" @click.right.prevent="show_menu" @click="menu=false">
-    <n-popover trigger="manual" :x="menu_x" :y="menu_y" :show="menu" placement="right-start">
-      <span class="new_point" @click="new_point">新建调查点</span>
-    </n-popover>
+  <div class="container" :class="{hide: switching_theme, disabled: props.disabled}" ref="container">
     <el-amap @init="init" :zoom="zoom" :center="center">
       <el-amap-marker v-for="point in points" :position="[point.longitude, point.latitude]">
-        <n-popover :show="show_popover===point.key" :x="popover_x" :y="popover_y" v-if="props.editable">
-          <template #header>
-            <span v-if="editing !== point.key" style="line-height: 34px;">{{point.name.length>0 ? point.name : "未指定名称"}}</span>
-            <n-input v-else v-model:value="point.name" style="max-width: 300px;min-width: 100px;" autofocus autosize :maxlength="10" :minlength="3"></n-input>
-          </template>
-          <n-button size="small" type="primary" @click="switch_editing(point.key)">
-            {{editing === point.key ? '完成' : '编辑'}}
-          </n-button>
-          <n-button style="float: right;margin-left:10px;" size="small" type="error" @click="delete_point(point.key)">
-            删除
-          </n-button>
-        </n-popover>
-        <n-popover v-else :show="show_popover===point.key" :x="popover_x" :y="popover_y">
-            <span v-if="editing !== point.key" style="line-height: 34px;">{{point.name.length>0 ? point.name : "未指定名称"}}</span>
-            <n-input v-else v-model:value="point.name" style="max-width: 300px;min-width: 100px;" autofocus autosize :maxlength="10" :minlength="3"></n-input>
+        <n-popover :show="show_popover===point.key" :x="popover_x" :y="popover_y">
+            <span style="line-height: 34px;">{{point.name.length>0 ? point.name : "未指定名称"}}</span>
         </n-popover>
         <n-icon size="large" class="point" @click.stop.prevent="on_click(point.key)" :class="'marker-'+point.key">
-          <CircleFilled/>
+          <CircleFilled :class="{selected: props.selected===point.key}"/>
         </n-icon>
       </el-amap-marker>
     </el-amap>
@@ -48,14 +32,14 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-  editable: {
-    type: Boolean,
-    default: false
-  },
   disabled: {
     type: Boolean,
     default: false
   },
+  selected: {
+    type: String,
+    default: null
+  }
 })
 
 watch(() => props.points, (val) => {
@@ -137,10 +121,6 @@ watch(theme, (new_theme) => {
   }, 200);
 });
 
-
-
-
-
 const show_popover = ref(null);
 const popover_x = ref(0);
 const popover_y = ref(0);
@@ -155,8 +135,8 @@ function on_click(key) {
     popover_y.value = element.getBoundingClientRect().top;
     show_popover.value = key;
   }
-  if (editing.value === key) {
-    switch_editing(key);
+  if (props.selected !== key) {
+    emit("update:selected", key);
   }
 }
 
@@ -212,68 +192,9 @@ function init(e) {
   map.on("mapmove", handle_drag);
 }
 
-const editing = ref(null)
-function switch_editing(key) {
-  if (editing.value === key) {
-    // context.emit('update:points', points.value);
-    emit('update:points', props.points);
-    editing.value = null;
-  } else {
-    editing.value = key;
-  }
-}
-const menu_x = ref(0);
-const menu_y = ref(0);
-const menu = ref(false);
-function show_menu(e) {
-  if (!props.editable) {
-    return;
-  }
-  show_popover.value = null;
-  menu.value = true;
-  menu_x.value = e.clientX - 5;
-  menu_y.value = e.clientY - 15;
-}
-
-function new_point(e) {
-  let x = menu_x.value;
-  let y = menu_y.value;
-  let pixel = new AMap.Pixel(x - container.value.getBoundingClientRect().left, y - container.value.getBoundingClientRect().top);
-  let lngLat = map.containerToLngLat(pixel);
-  let new_key = Math.random().toString(36).substr(2, 9);
-  points.value.push({
-    name: "新调查点",
-    longitude: lngLat.lng,
-    latitude: lngLat.lat,
-    key: new_key,
-  })
-  // 立马关闭菜单 转入新增点的编辑状态
-  menu.value = false;
-  setTimeout(() => {
-    on_click(new_key);
-    switch_editing(new_key);
-  }, 100);
-  emit('new_point', {
-    longitude: lngLat.lng,
-    latitude: lngLat.lat,
-    key: new_key,
-  });
-  emit('update:points', points.value);
-}
-
-function delete_point(key) {
-  console.log(key);
-  points.value = points.value.filter(_point => _point.key !== key)
-  emit('delete_point', key);
-  emit('update:points', points.value);
-}
-
 function on_wheel(e) {
   if (show_popover.value !== null) {
     show_popover.value = null;
-  }
-  if (!menu.value) {
-    menu.value = false;
   }
 }
 
@@ -312,7 +233,7 @@ onUnmounted(() => {
 .point {
   transition: color .2s;
 }
-.point:hover {
+.point:hover, .selected {
   color: #62d3ad;
 }
 .new_point {
@@ -324,6 +245,7 @@ onUnmounted(() => {
 .new_point:active {
   filter: brightness(.8);
 }
+
 </style>
 
 <style>
