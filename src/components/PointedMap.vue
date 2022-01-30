@@ -1,6 +1,6 @@
 <template>
 <!--  点标记地图-->
-  <div class="container" :class="{hide: switching_theme}" ref="container" @click.right.prevent="show_menu" @click="menu=false">
+  <div class="container" :class="{hide: switching_theme, disabled: props.disabled}" ref="container" @click.right.prevent="show_menu" @click="menu=false">
     <n-popover trigger="manual" :x="menu_x" :y="menu_y" :show="menu" placement="right-start">
       <span class="new_point" @click="new_point">新建调查点</span>
     </n-popover>
@@ -22,7 +22,7 @@
             <span v-if="editing !== point.key" style="line-height: 34px;">{{point.name.length>0 ? point.name : "未指定名称"}}</span>
             <n-input v-else v-model:value="point.name" style="max-width: 300px;min-width: 100px;" autofocus autosize :maxlength="10" :minlength="3"></n-input>
         </n-popover>
-        <n-icon size="large" class="point" @click.prevent="on_click(point.key)" :class="'marker-'+point.key">
+        <n-icon size="large" class="point" @click.stop.prevent="on_click(point.key)" :class="'marker-'+point.key">
           <CircleFilled/>
         </n-icon>
       </el-amap-marker>
@@ -52,6 +52,14 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  disabled: {
+    type: Boolean,
+    default: false
+  },
+})
+
+watch(() => props.points, (val) => {
+  points.value = val;
 })
 
 const points = ref(props.points);
@@ -108,7 +116,7 @@ function get_center_and_zoom_level(points) {
 }
 
 const center = ref([116.344852,39.928658]);
-const zoom = ref(5);
+const zoom = ref(props.disabled? 12: 5);
 
 const theme = inject('theme');
 const switching_theme = ref(false);
@@ -138,6 +146,7 @@ const popover_x = ref(0);
 const popover_y = ref(0);
 
 function on_click(key) {
+  if (props.disabled) return;
   if (show_popover.value === key) {
     show_popover.value = null;
   } else {
@@ -153,7 +162,11 @@ function on_click(key) {
 
 function handle_drag(e) {
   if (show_popover.value) {
-      let point = props.points.filter(point => point.key === show_popover.value)[0];
+      let point = props.points.filter(point => point && point.key === show_popover.value)[0];
+      if (!point) {
+        show_popover.value = null;
+        return;
+      }
       let element_longitude = point.longitude;
       let element_latitude = point.latitude;
       let lngLat = new AMap.LngLat(element_longitude, element_latitude);
@@ -177,8 +190,18 @@ function init(e) {
   }, 100);
   setTimeout(() => {
     zoom.value = zoom_level;
+    if (props.disabled) {
+      map.setStatus({
+        dragEnable: false,
+        keyboardEnable: false,
+        doubleClickZoom: false,
+        zoomEnable: false,
+        rotateEnable: false
+      });
+    }
   }, 500);
   map = e;
+
   if (theme.value === 'dark') {
     map.setMapStyle('amap://styles/dark');
   } else {
@@ -254,10 +277,16 @@ function on_wheel(e) {
 }
 
 onMounted(() => {
+  if (props.disabled) {
+    return;
+  }
   window.addEventListener("wheel", on_wheel);
 })
 
 onUnmounted(() => {
+  if (props.disabled) {
+    return;
+  }
   window.removeEventListener("wheel", on_wheel);
 })
 
@@ -267,6 +296,12 @@ onUnmounted(() => {
 .container.hide {
   /*filter: blur(100px);*/
   opacity: 0;
+}
+.container.disabled {
+  pointer-events: none !important;
+}
+.container.disabled * {
+  pointer-events: none !important;
 }
 .container {
   transition: all .1s ease-in-out;

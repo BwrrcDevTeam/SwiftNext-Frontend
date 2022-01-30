@@ -15,12 +15,13 @@
 </template>
 
 <script setup>
-import {NForm, NInput, NGrid, NGridItem, NFormItem} from 'naive-ui'
+import {NForm, NInput, NGrid, NGridItem, NFormItem, useNotification} from 'naive-ui'
 import {inject, onMounted, ref} from "vue";
 
 import {client, log_api, update_session, config} from "../../apis";
 import {io} from "socket.io-client";
 import PointedMap from "../../components/PointedMap.vue";
+import {useRouter} from "vue-router";
 
 const props = defineProps({
   default_detect_list: {
@@ -52,11 +53,26 @@ const points = ref([])
 // });
 const group_all_points = ref([]);
 
+const notification = useNotification();
+const router = useRouter();
+
 // 初始化
 onMounted(async () => {
-//  在挂载后，1.检查用户有没有草稿
+//  在挂载后，1.检查用户各项属性
   try {
     session.value = await update_session();
+    // 检查用户是否已经登录
+    if (!session.value.is_login) {
+      await inject("login");
+    }
+    // 检查用户有没有调查小组
+    if (!session.value.group_id) {
+      notification.error({
+        title: "错误",
+        content: "您还没有调查小组，请联系小组长获取入组邀请!",
+      })
+      router.push({name: 'home_group'})
+    }
   } catch (e) {
   //  这个错误我接不了(
     handle_crucial_error(e);
@@ -71,7 +87,9 @@ onMounted(async () => {
   }
 //  3. 查询小组的全部调查点
   try {
-    group_all_points.value = await client.get("/");
+    group_all_points.value = await client.get("/positions/by_group/" + session.value.user.group_id);
+  } catch (e) {
+
   }
 })
 

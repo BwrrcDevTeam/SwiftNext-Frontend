@@ -28,6 +28,12 @@
           <UserLine uid="61f3ed30d2784457e4706813"></UserLine>
         </n-list-item>
       </n-list>
+      <h3>小组展示</h3>
+<!--      <GroupCard group_id="61f616ce59d266356a4efc14" style="max-width: 700px;">-->
+<!--      </GroupCard>-->
+      <h3>小组编辑</h3>
+      <GroupCard group_id="61f616ce59d266356a4efc14" style="max-width: 700px;" manageable>
+      </GroupCard>
     </n-config-provider>
   </div>
 </template>
@@ -39,6 +45,7 @@ import hljs from 'highlight.js/lib/core'
 import javascript from 'highlight.js/lib/languages/javascript'
 import PointedMap from "../components/PointedMap.vue";
 import UserLine from "../components/UserLine.vue";
+import GroupCard from "../components/GroupCard.vue";
 
 hljs.registerLanguage('javascript', javascript)
 

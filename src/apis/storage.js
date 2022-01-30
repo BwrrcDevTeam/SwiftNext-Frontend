@@ -16,11 +16,11 @@ function detect_image(fid) {
 }
 
 function get_inline_url(fid) {
-    return config.baseURL + "storage/inline" + fid
+    return config.baseURL + "storage/inline/" + fid
 }
 
 function get_download_url(fid) {
-    return config.baseURL + "storage/download" + fid
+    return config.baseURL + "storage/download/" + fid
 }
 
 export default {
