@@ -12,6 +12,7 @@ const config = {
     baseURL: "https://api.imlihe.com/",
     // baseURL: "http://localhost:8000/",
     timeout: 10000,
+    socket: "wss://api.imlihe.com",
 }
 
 const client = axios.create(config)

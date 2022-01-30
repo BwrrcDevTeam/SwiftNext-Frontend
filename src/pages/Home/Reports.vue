@@ -35,7 +35,7 @@
         <n-button type="info" size="large" secondary v-if="image_list.length > 0" style="margin-top: 20px;" @click="detect_and_create">提交检测</n-button>
       </n-upload>
     </transition>
-    <NewReport v-if="stage==='filling'" :detecting_images="detect_list"></NewReport>
+    <NewReport v-if="stage==='filling'" :default_detect_list="detect_list"></NewReport>
 
   </n-card>
   <n-card :title="t(strings.history)" style="margin-top: 20px;">
@@ -66,7 +66,7 @@ function submit() {
 const t = inject("translate")
 
 // const stage = ref('select_method')
-const stage = ref('upload_images')
+const stage = ref('filling')
 
 const image_list = ref([]);
 const message = useMessage();

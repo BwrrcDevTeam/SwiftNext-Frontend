@@ -96,8 +96,13 @@ function get_center_and_zoom_level(points) {
   let latitude_to_meter = (max_latitude - min_latitude) * 111000;
   let zoom_level = scale_2_zoom(Math.max(longitude_to_meter, latitude_to_meter)) + 2;
   // 只有一个点的时候，不能缩放
-  if (points.length === 1) {
+  if (points.length <= 1) {
     zoom_level = 12;
+  }
+  // 没有点的时候，中心点为北京
+  if (points.length === 0) {
+    center_longitude = 116.397428;
+    center_latitude = 39.929986;
   }
   return {center_longitude, center_latitude, zoom_level};
 }

@@ -16,16 +16,29 @@
       <PointedMap v-model:points="demo_points" style="height: 300px;width: 500px" editable>
 
       </PointedMap>
+      <h3>多个用户展示</h3>
+      <n-list style="max-width: 300px;">
+        <n-list-item>
+          <UserLine uid="61eccd70d646dc17f4430bd2"></UserLine>
+        </n-list-item>
+        <n-list-item>
+          <UserLine uid="61f3ed15d2784457e4706812"></UserLine>
+        </n-list-item>
+        <n-list-item>
+          <UserLine uid="61f3ed30d2784457e4706813"></UserLine>
+        </n-list-item>
+      </n-list>
     </n-config-provider>
   </div>
 </template>
 
 <script setup>
-import {NCode, NConfigProvider} from "naive-ui";
+import {NCode, NConfigProvider, NList, NListItem} from "naive-ui";
 import {inject} from "vue";
 import hljs from 'highlight.js/lib/core'
 import javascript from 'highlight.js/lib/languages/javascript'
 import PointedMap from "../components/PointedMap.vue";
+import UserLine from "../components/UserLine.vue";
 
 hljs.registerLanguage('javascript', javascript)
 
