@@ -9,10 +9,10 @@ import groups from "./groups";
 import storage from "./storage"
 
 const config = {
-    baseURL: "https://apiv6.imlihe.com:8000/",
+    baseURL: "https://api.imlihe.com/",
     // baseURL: "http://localhost:8000/",
     timeout: 10000,
-    socket: "wss://apiv6.imlihe.com:8000/",
+    socket: "wss://api.imlihe.com/",
 }
 
 const client = axios.create(config)

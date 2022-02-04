@@ -55,7 +55,7 @@
       <UserLine v-for="uid in members" :uid="uid" style="margin-left: 20px;margin-top: 5px;margin-bottom: 5px;"></UserLine>
     </n-list>
 
-    <n-card v-if="members.includes(session.user.uid)">
+    <n-card v-if="members.includes(session.user.uid) && (!props.brief)">
       <template #header>
         <n-h2>重要操作</n-h2>
       </template>
@@ -97,6 +97,10 @@ const props = defineProps({
     required: true,
   },
   manageable: {
+    type: Boolean,
+    default: false,
+  },
+  brief: {
     type: Boolean,
     default: false,
   },

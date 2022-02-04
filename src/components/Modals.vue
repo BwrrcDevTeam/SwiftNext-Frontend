@@ -30,7 +30,7 @@
 
 <script setup>
 import Login from './Login.vue'
-import {inject, ref} from "vue";
+import {inject, onMounted, ref} from "vue";
 import {Modal_strings} from "../i18n"
 import {NModal, NCard} from 'naive-ui'
 const t = inject("translate");
@@ -52,9 +52,10 @@ const props = defineProps({
   },
   full_traceback: {
     type: String,
-    default: "",
+    default: localStorage.getItem("full_traceback"),
   },
 });
+
 
 function admin_contact_update(show) {
   emit("update:show_admin_contact", show);

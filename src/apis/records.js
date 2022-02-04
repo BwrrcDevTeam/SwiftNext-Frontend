@@ -15,6 +15,18 @@ function get_week_report(session) {
     return client.get(`/records?uid=${session.user.uid}&from=${get_utc_timestamp(week_start)}&to=${get_utc_timestamp(week_end)}`);
 }
 
+function get_count() {
+//    获取项目的调查情况
+    return client.get(`/records/count`);
+}
+
+function get_group_count(group_id) {
+//    获取项目的调查情况
+    return client.get(`/records/count?group_id=${group_id}`);
+}
+
 export default {
-    get_week_report
+    get_week_report,
+    get_count,
+    get_group_count
 }

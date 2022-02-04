@@ -34,18 +34,27 @@
       <h3>小组编辑</h3>
       <GroupCard group_id="61f616ce59d266356a4efc14" style="max-width: 700px;" manageable>
       </GroupCard>
+      <h3>指南针组件</h3>
+      <Compass v-model:orientation="ori" style="width: 200px; height: 200px;"/>
+      <n-input-number v-model:value="ori" style="width: 200px;" max="360" min="0" step="10"></n-input-number>
+      <h3>检测结果展示组件</h3>
+      <Detection editable detection="61fb95448307a4ead06860d5" style="width: 500px; height: 400px;">
+
+      </Detection>
     </n-config-provider>
   </div>
 </template>
 
 <script setup>
-import {NCode, NConfigProvider, NList, NListItem} from "naive-ui";
-import {inject} from "vue";
+import {NCode, NConfigProvider, NList, NListItem, NInputNumber} from "naive-ui";
+import {inject, ref} from "vue";
 import hljs from 'highlight.js/lib/core'
 import javascript from 'highlight.js/lib/languages/javascript'
 import PointedMap from "../components/PointedMap.vue";
 import UserLine from "../components/UserLine.vue";
 import GroupCard from "../components/GroupCard.vue";
+import Compass from "../components/Compass.vue";
+import Detection  from "../components/Detection.vue";
 
 hljs.registerLanguage('javascript', javascript)
 
@@ -66,6 +75,8 @@ const demo_points = [
   }
 ]
 
+
+const ori = ref(0);
 </script>
 
 <style scoped>

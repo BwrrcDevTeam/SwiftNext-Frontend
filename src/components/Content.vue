@@ -1,7 +1,7 @@
 <template>
   <n-spin :show="contacting_server">
       <n-layout>
-        <n-layout-header>
+        <n-layout-header v-if="route.name !== 'error'">
           <Header/>
         </n-layout-header>
         <Modals v-model:show_admin_contact="show_admin_contact" :full_traceback="full_traceback" :login_text="login_text" v-model:show_login="show_login"/>
@@ -9,7 +9,7 @@
           <n-layout-content class="content">
               <router-view v-if="show_page"/>
           </n-layout-content>
-          <n-layout-footer v-if="route.name && !route.name.includes('home')">
+          <n-layout-footer v-if="route.name && !route.name.includes('home') && route.name !=='error'">
             <Footer/>
           </n-layout-footer>
         </n-scrollbar>
@@ -57,7 +57,7 @@ let login_text = reactive({
   title: "",
   sub_title: "",
 })
-let full_traceback = ref("");
+let full_traceback = ref(localStorage.getItem("full_traceback"));
 window.notify_admin = () => {
   show_admin_contact.value = true;
 }
@@ -101,6 +101,7 @@ function handle_crucial_error(e) {
       message: e.message,
       response: e.response.data,
     });
+    localStorage.setItem("full_traceback", full_traceback.value);
     let status = e.response.status.toString();
     if (status !== "404" || status !== "403" || status !== "500" || status !== "418") {
       status = "404";
@@ -133,6 +134,8 @@ function handle_crucial_error(e) {
     full_traceback.value = JSON.stringify({
       message: e.message,
     });
+    localStorage.setItem("full_traceback", full_traceback.value);
+
     router.push({
       name: "error",
       query: {
