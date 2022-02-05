@@ -8,7 +8,7 @@
     </n-layout-sider>
 <!--    正文内容-->
 <!--    <div class="mask" :class="{'show': side_menu_show, 'hide': !side_menu_show}" @click.prevent="side_menu_show = false" @scroll.prevent="null">-->
-      <n-scrollbar style="height: calc(100vh - 70px);">
+      <n-scrollbar style="height: calc(100vh - 70px);transition: margin-left .3s" :class="{'side_show': side_menu_show, 'side_hide': !side_menu_show}">
         <n-layout-content class="content">
           <router-view></router-view>
         </n-layout-content>
@@ -191,6 +191,9 @@ router.beforeEach((to, from, next) => {
     filter: brightness(1);
     /*width: 0;*/
   }
+  .content {
+    min-height: calc(100vh - 350px);
+  }
   @media screen and (max-width: 800px) {
     aside {
       position: absolute;
@@ -212,5 +215,18 @@ router.beforeEach((to, from, next) => {
     .footer {
       width: 100vw;
     }
+  }
+
+
+</style>
+
+<style>
+  .side_show {
+    margin-left: 272px;
+    width: 100vw !important;
+  }
+  .side_hide {
+    margin-left: 0;
+    width: 100vw;
   }
 </style>

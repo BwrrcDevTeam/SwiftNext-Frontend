@@ -178,10 +178,8 @@ const Declaration_strings = {
         en: "About this website"
     },
     about_line1: {
-        cn: "本站是在北京野生动物保护中心授权监督下，由@lihe07独立开发的信息收集统计系统。系统包含一套面向用户的界面和一个用于处理数据交互的程序。",
-        en: "This site is an information collection and statistics system independently developed by @lihe07 under the " +
-            "authorization and supervision of Beijing Wildlife Conservation Center. The system consists of a " +
-            "user-oriented interface and a program for handling data interactions."
+        cn: "本站是在北京野生动物保护中心授权监督下，由@lihe07开发，@darkstart调试维护的信息收集统计系统。系统包含一套面向用户的界面和一个用于处理数据交互的程序。",
+        en: "This site is an information collection and statistics system developed by @lihe07 and debugged and maintained by @darkstart under the authorization and supervision of Beijing Wildlife Conservation Center. The system consists of a user-oriented interface and a program for handling data interactions."
     },
     about_line2: {
         cn: "本站的主要功能包括：",
