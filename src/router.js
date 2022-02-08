@@ -121,6 +121,6 @@ const routes = [
 ]
 
 export default createRouter({
-    history: createWebHistory(),
+    history: createWebHashHistory(),
     routes
 });

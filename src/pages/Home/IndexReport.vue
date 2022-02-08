@@ -36,7 +36,7 @@
     <n-grid-item>
 <!--      调查小组信息-->
       <n-card :title="t(strings.group_overview)">
-        <n-alert type="warning" v-if="!session.user.hasOwnProperty('groups')" :title="t(strings.no_group.title)" class="clickable" @click="router.push({name: 'home_group'})">
+        <n-alert type="warning" v-if="!session.user.hasOwnProperty('group')" :title="t(strings.no_group.title)" class="clickable" @click="router.push({name: 'home_group'})">
           <template #icon>
             <n-icon>
               <GroupOffOutlined/>
@@ -155,9 +155,9 @@ onMounted(async () => {
   }
 
 
-  if (session.value.user.hasOwnProperty('groups')) {
+  if (session.value.user.hasOwnProperty('group')) {
     log_api("小组", "Client => Server", "获取用户所在的小组");
-    group.value = (await client.get("/groups/" + session.value.user.groups[0])).data;
+    group.value = (await client.get("/groups/" + session.value.user.group)).data;
     log_api("小组", "Server => Client", "查询到 " + group.value.name);
   }
 
