@@ -26,7 +26,7 @@
       </n-button>
     </template>
 <!--    已加入的小组-->
-    <n-alert type="warning" v-if="!session.user.hasOwnProperty('groups')" :title="t(strings.no_group.title)" class="clickable" @click="show_join_group=true">
+    <n-alert type="warning" v-if="!session.user.group" :title="t(strings.no_group.title)" class="clickable" @click="show_join_group=true">
       <template #icon>
         <n-icon>
           <GroupOffOutlined/>
@@ -34,7 +34,7 @@
       </template>
       {{ t(strings.no_group.description) }}
     </n-alert>
-    <GroupCard v-else :group_id="group" v-for="group in session.user.groups">
+    <GroupCard v-else :group_id="session.user.group">
 
     </GroupCard>
 

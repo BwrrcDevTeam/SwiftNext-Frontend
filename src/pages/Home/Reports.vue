@@ -17,7 +17,7 @@
         </n-button>
       </n-space>
       <n-upload v-else-if="stage==='upload_images'" :action="storage.get_upload_url()" v-model:file-list="image_list" class="upload" @before-upload="check_type"
-                :with-credentials="true" :on-remove="delete_image" ref="upload" @click="submit" @finish="upload_finish">
+                :with-credentials="true" :on-remove="delete_image" @finish="upload_finish">
         <n-upload-dragger class="drag">
           <div style="margin-bottom: 12px;">
             <n-icon size="40">
@@ -57,12 +57,6 @@ import Images from "@vicons/ionicons5/Images";
 
 import {storage} from "../../apis";
 import HistoryRecords from "../../components/HistoryRecords.vue";
-
-const upload = ref(null);
-
-function submit() {
-  upload.value.submit();
-}
 
 const t = inject("translate")
 
@@ -157,13 +151,13 @@ async function detect_and_create() {
 </style>
 
 <style>
-.n-upload-trigger {
+.upload .n-upload-trigger {
   width: 500px;
   padding: 20px;
   max-width: 500px;
 }
 @media screen and (max-width: 600px) {
-  .n-upload-trigger {
+  .upload .n-upload-trigger {
     width: 100%;
     padding: 0;
     max-width: 100%;

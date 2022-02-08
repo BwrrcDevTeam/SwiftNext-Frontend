@@ -63,7 +63,7 @@
     <n-collapse-transition :show="invitation_code.length > 0">
       <n-result title="创建成功" description="请保管好您的注册邀请码，系统不会保存它" status="success">
         <template #footer>
-          <span style="user-select: all;">620102ff3447e4d25f5544cd</span>
+          <span style="user-select: all;">{{invitation_code}}</span>
         </template>
       </n-result>
     </n-collapse-transition>
@@ -371,6 +371,7 @@ async function create_invitation() {
       group_id: props.group_id,
       permission: new_user_permission.value,
     })
+    console.log(result.data.code)
     invitation_code.value = result.data.code;
   } else {
     let result = await client.post("/groups/invitation", {
@@ -385,7 +386,7 @@ async function create_invitation() {
 function clean_code() {
   setTimeout(() => {
     invitation_code.value = "";
-  }, 1000);
+  }, 500);
 }
 </script>
 

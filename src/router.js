@@ -74,6 +74,23 @@ const routes = [
             no_auth: true
         }
     },
+    // 验证码应用页
+    {
+        path: "/code/:code",
+        name: "code",
+        component: () => import("./pages/Code.vue"),
+        meta: {
+            no_auth: true
+        }
+    },
+    {
+        path: "/code",
+        name: "code_manual",
+        component: () => import("./pages/Code.vue"),
+        meta: {
+            no_auth: true
+        }
+    },
     // 走错了
     {
         path: "/:pathMatch(.*)",

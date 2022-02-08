@@ -1,11 +1,23 @@
 <template>
-  #Community
+  <n-card style="max-width: 500px; margin: 50px auto;text-align: center; padding: 20px;">
+    <n-icon size="60">
+      <Communication24Regular/>
+    </n-icon>
+    <n-h2>
+      <n-gradient-text type="info">开发中的功能 - 社区</n-gradient-text>
+    </n-h2>
+    <n-p>
+      社区功能让站内志愿者可以分享图文内容。这些内容可以被所有其他站内用户查看。
+    </n-p>
+    <n-p>在社区功能中上传的媒体或附件允许在系统中永久保存，且不会进行任何压缩操作，适用于长期记录。</n-p>
+  </n-card>
 </template>
 
-<script>
-export default {
-  name: "Community"
-}
+<script setup>
+import {NCard, NIcon, NH2, NGradientText, NP} from "naive-ui";
+
+import Communication24Regular from "@vicons/fluent/Communication24Regular";
+
 </script>
 
 <style scoped>

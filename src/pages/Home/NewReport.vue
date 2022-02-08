@@ -194,13 +194,14 @@ onMounted(async () => {
       await login();
     }
     // 检查用户有没有调查小组
-    if (!session.value.user.groups || session.value.user.groups.length === 0) {
+    if (!session.value.user.group) {
       notification.error({
         title: "错误",
         content: "您还没有调查小组，请联系小组长获取入组邀请!",
         duration: 3000,
       })
       await router.push({name: 'home_group'})
+      return;
     }
   } catch (e) {
   //  这个错误我接不了(
@@ -218,7 +219,7 @@ onMounted(async () => {
 //  3. 查询小组的全部调查点
   try {
     log_api("小组调查点", "Client => Server", "询问小组调查点");
-    let points = (await client.get("/positions/by_group/" + session.value.user.groups[0])).data;
+    let points = (await client.get("/positions/by_group/" + session.value.user.group)).data;
     points.forEach(point => {
       group_all_points.value.push({
         name: point.name,
@@ -257,6 +258,15 @@ onMounted(async () => {
       new_detection(file.fid)
     })
   }
+  detect_list.value = props.default_detect_list.map(ele => {
+    return {
+      fid: ele.fid,
+      url: storage.get_thumbs_url(ele.fid, 100, 100),
+      id: ele.fid,
+      name: ele.name,
+      status: "finished"
+    }
+  })
 })
 
 const compute_method = ref('max')
@@ -423,7 +433,7 @@ const message = useMessage();
 function evaluate(show_error = false) {
   // 计算出表单，并加以验证
   let form = {
-    group_id: session.value.user.groups[0],
+    group_id: session.value.user.group,
     num: data.value.num,
     position: selected_point.value,
     time: data.value.time

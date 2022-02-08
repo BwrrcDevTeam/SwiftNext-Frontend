@@ -148,7 +148,7 @@ onMounted(async () => {
 
   log_api("填报", "Client => Server", "获取小组填报数量");
   try {
-    group_reports.value = (await records.get_group_count(session.value.groups[0])).data;
+    group_reports.value = (await records.get_group_count(session.value.group)).data;
     log_api("填报", "Server => Client", "查询到 " + group_reports.value + " 条填报");
   } catch (e) {
 
