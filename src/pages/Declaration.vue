@@ -61,12 +61,12 @@
         </n-card>
       </n-scrollbar>
     </n-layout-content>
-    <n-layout-sider class="anchors">
-      <n-anchor :show-rail="true" :show-background="false" affix>
-        <n-anchor-link :title="t(Declaration_strings.privacy)" href="#privacy"/>
-        <n-anchor-link :title="t(Declaration_strings.about)" href="#about"/>
-      </n-anchor>
-    </n-layout-sider>
+<!--    <n-layout-sider class="anchors">-->
+<!--      <n-anchor :show-rail="true" :show-background="false" affix>-->
+<!--        <n-anchor-link :title="t(Declaration_strings.privacy)"/>-->
+<!--        <n-anchor-link :title="t(Declaration_strings.about)"/>-->
+<!--      </n-anchor>-->
+<!--    </n-layout-sider>-->
   </n-layout>
 
 </template>
