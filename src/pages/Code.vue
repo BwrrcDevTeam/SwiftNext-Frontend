@@ -1,5 +1,5 @@
 <template>
-    <template v-if="code.length > 0">
+    <template v-if="stage">
       <n-spin :show="is_checking_code">
         <n-card class="main">
           <n-result v-show="check_status!==undefined" :status="check_status" :title="check_status==='success' ? '验证成功' : '验证失败'" :description="check_status === 'success' ? '您可以关闭该页面了' : description" class="result">
@@ -20,7 +20,7 @@
         <template v-if="check_status===undefined">
           <n-h2>手动录入验证码</n-h2>
           <n-form-item label="请输入收到的验证码">
-            <n-input @keydown.enter="check_code" v-model="code" placeholder="请输入收到的验证码"></n-input>
+            <n-input @keydown.enter="check_code" v-model:value="code" placeholder="请输入收到的验证码"></n-input>
           </n-form-item>
           <LoginButton @click="check_code" style="width: 100%;">
               检验验证码
@@ -82,12 +82,15 @@ async function check_code() {
 
 }
 
+const stage = ref(false);
+
 onMounted(() => {
   if (route.params.hasOwnProperty('code')) {
     code.value = route.params.code
     if (code.value.length > 0) {
       check_code()
     }
+    stage.value = true;
   } else {
     code.value = ""
   }
