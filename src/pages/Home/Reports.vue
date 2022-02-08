@@ -36,16 +36,12 @@
       </n-upload>
     </transition>
     <n-collapse-transition :show="stage==='filling'">
-      <NewReport :default_detect_list="detect_list"></NewReport>
+      <NewReport :default_detect_list="image_list"></NewReport>
     </n-collapse-transition>
-
   </n-card>
   <n-collapse-transition :show="stage!=='filling'">
     <n-card :title="t(strings.history)" style="margin-top: 20px;">
-      <div style="display: flex;justify-content: center;width: 100%; height: 200px;align-content: center;flex-direction: column">
-        <n-empty size="huge" style="height: fit-content;">
-        </n-empty>
-      </div>
+      <HistoryRecords/>
     </n-card>
   </n-collapse-transition>
 
@@ -60,6 +56,7 @@ import NewReport from "./NewReport.vue";
 import Images from "@vicons/ionicons5/Images";
 
 import {storage} from "../../apis";
+import HistoryRecords from "../../components/HistoryRecords.vue";
 
 const upload = ref(null);
 
@@ -69,8 +66,7 @@ function submit() {
 
 const t = inject("translate")
 
-// const stage = ref('select_method')
-const stage = ref('filling')
+const stage = ref('select_method')
 
 const image_list = ref([]);
 const message = useMessage();
@@ -79,28 +75,6 @@ async function close_card() {
   await clean_images()
   stage.value='select_method'
 }
-
-onMounted(() => {
-  window.onbeforeunload = (e) => {
-    e = window.event || e;
-    if (stage.value === 'upload_images') {
-      // e.returnValue = t({
-      //   "cn": "离开页面后将会删除所有上传的图片",
-      //   "en": "Leaving the page will delete all uploaded images"
-      // });
-    }
-  }
-
-  window.onunload = async (e) => {
-  //  清理全部图片
-
-  }
-})
-
-onUnmounted(() => {
-  window.onbeforeunload = null;
-  window.onunload = null;
-})
 
 function upload_finish({ file, event }) {
   file.fid = JSON.parse(event.target.response).id;
@@ -144,18 +118,8 @@ async function delete_image({file, file_list}) {
   }
 }
 
-const detect_list = ref([])
-
 async function detect_and_create() {
-  if (image_list.value.length === 0) {
-    message.error(t(strings.no_image));
-    return
-  }
-  for (const image of image_list.value) {
-    let result = await storage.detect_image(image.fid)
-    console.log(result)
-  }
-  // stage.value = 'filling'
+  stage.value = 'filling'
 }
 </script>
 

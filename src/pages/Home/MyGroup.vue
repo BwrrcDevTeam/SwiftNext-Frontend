@@ -47,19 +47,21 @@
     <PointedMap editable v-model:points="create_form.points" style="height: 300px;width: 100%;">
 
     </PointedMap>
+
     <n-dynamic-input v-model:value="create_form.points" #="{value}" style="margin-top: 20px;" :on-create="create_point">
       <div style="display: flex; align-items: center;width: 100%;">
-        <n-input placeholder="调查点名称" v-model:value="value.name" autosize style="margin-right: 10px;">
+        <n-input placeholder="调查点名称" v-model:value="value.name" autosize style="margin-right: 10px; width: 100%;">
 
         </n-input>
-        <n-input-number placeholder="经度" v-model:value="value.longitude" style="margin-right: 10px;" :step="0.0001" max="180" min="-180">
+        <n-input-number placeholder="经度" v-model:value="value.longitude" style="margin-right: 10px;max-width: 150px;width: 100%;" :step="0.0001" max="180" min="-180">
 
         </n-input-number>
-        <n-input-number placeholder="纬度" v-model:value="value.latitude" :step="0.0001" max="90" min="-90">
+        <n-input-number placeholder="纬度" v-model:value="value.latitude" :step="0.0001" max="90" min="-90" style="max-width: 150px;width: 100%;">
 
         </n-input-number>
       </div>
     </n-dynamic-input>
+
     <n-form-item :feedback="create_form_feedback.name.message" :validation-status="create_form_feedback.name.status" >
       <n-input placeholder="小组名称" v-model:value="create_form.name" minlength="3" maxlength="10"></n-input>
     </n-form-item>

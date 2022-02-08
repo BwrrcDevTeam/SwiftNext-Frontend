@@ -61,6 +61,10 @@ const props = defineProps({
     type: Boolean,
     default: true
   },
+  thresh: {
+    type: Number,
+    default: 0.5
+  }
 })
 
 const detection = ref(null);
@@ -251,20 +255,20 @@ function draw() {
   _image.src = image.value;
   _image.onload = (event) => {
     ctx.drawImage(_image, 0, 0, image_width.value, image_height.value);
-    console.log(_image)
-    let width = canvas.value.width; // 画布宽度
-    let height = canvas.value.height; // 画布高度
     for (let point of detection.value) {
-    //  画一个圆
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
-      ctx.strokeStyle = `rgba(255,0,0,${point.score})`;
-      ctx.stroke()
+      if (point.score > props.thresh) {
+      //  画一个圆
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+        ctx.strokeStyle = `rgb(255,0,0)`;
+        ctx.stroke()
+      }
     }
   }
 
 }
-watch(detection, draw)
+watch(detection, draw);
+watch(props.thresh, draw);
 
 const message = useMessage();
 
@@ -341,6 +345,7 @@ onUnmounted(() => {
 
   }
   .tool {
+    margin-top: 12px;
     text-align: center;
   }
 </style>
@@ -348,6 +353,6 @@ onUnmounted(() => {
 <style>
   .n-spin-content {
     width: 100%;
-    height: 100%;
+    height: calc(100% - 40px);
   }
 </style>

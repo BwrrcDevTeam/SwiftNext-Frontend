@@ -1,6 +1,17 @@
 <template>
   <SelectPoint :points="group_all_points" style="width: 100%; height: 300px;" v-model:selected="selected_point"></SelectPoint>
   <div style="height: 30px;"></div>
+  <n-modal preset="card"
+           :show="preview_task_id !== undefined"
+           @close="preview_task_id = undefined"
+           style="max-width: 100vw; width:fit-content; height: fit-content;"
+           title="检测结果"
+           :mask-closable="false"
+  >
+<!--    展示检测结果的模态框-->
+    <Detection :thresh="thresh" editable :detection="preview_task_id ? preview_task_id : ''" style="height:80vh; max-height: 90vh; max-width: 90vw;width: 80vw;"/>
+
+  </n-modal>
   <n-grid cols="1 800:2">
     <n-grid-item style="padding: 10px;">
       <n-form-item required label="调查点">
@@ -15,11 +26,19 @@
         <n-date-picker v-model:value="data.time" style="max-width: 200px;" type="datetime"></n-date-picker>
       </n-form-item>
       <n-form-item label="检测图片">
-        <n-upload :action="storage.get_upload_url()" list-type="image-card" v-model:file-list="detect_list" :on-finish="commit_new_detection" with-credentials>
+        <n-upload
+            :action="storage.get_upload_url()"
+            list-type="image-card"
+            v-model:file-list="detect_list"
+            :on-finish="commit_new_detection"
+            with-credentials
+            @preview="handle_detection_preview"
+            :on-remove="delete_detection"
+        >
 
         </n-upload>
       </n-form-item>
-      <n-card title="检测设置">
+      <n-card title="检测设置" style="margin-bottom: 10px;">
         <n-form-item label="最终结果计算方式">
           <n-select :options="[{value: 'max', label: '多张取最大值'}, {value: 'sum', label: '多张总和'}]" v-model:value="compute_method">
           </n-select>
@@ -31,6 +50,9 @@
         </n-form-item>
         <n-input-number min="0" max="1" step="0.01" v-model:value="thresh">
         </n-input-number>
+        <br>
+
+        <n-button @click="compute_number" type="info" style="margin:auto; display: block">计算数量</n-button>
       </n-card>
     </n-grid-item>
     <n-grid-item style="padding: 10px;">
@@ -59,37 +81,39 @@
     <n-button size="large" type="primary" @click="submit">提交填报</n-button>
     <n-button size="large" type="warning" @click="$router.go(-1)">取消填报</n-button>
   </n-space>
+
 </template>
 
 <script setup>
 import {
-  NSpace,
-  NInput,
+  NButton,
+  NCard,
+  NDatePicker,
+  NFormItem,
   NGrid,
   NGridItem,
-  NFormItem,
-  useNotification,
-  NSelect,
+  NInput,
   NInputNumber,
-  NImage,
-  NUpload,
-  NCard,
+  NModal,
+  NProgress,
+  NSelect,
   NSlider,
-  NDatePicker,
-  NButton,
-    NProgress,
-  useMessage
+  NSpace,
+  NUpload,
+  useMessage,
+  useNotification
 } from 'naive-ui'
-import {h, inject, onMounted, ref} from "vue";
-
-import {client, log_api, update_session, config, storage} from "../../apis";
-import {io} from "socket.io-client";
-import SelectPoint from "../../components/SelectPoint.vue";
+import {h, inject, onMounted, ref, watch} from "vue";
+import {client, config, log_api, storage, update_session} from "../../apis";
 import {useRouter} from "vue-router";
 
+// 外部组件
+import SelectPoint from "../../components/SelectPoint.vue";
 import Compass from "../../components/Compass.vue";
+import Detection from "../../components/Detection.vue";
 
 import SparkMD5 from "spark-md5";
+
 
 const props = defineProps({
   default_detect_list: {
@@ -102,8 +126,10 @@ const t = inject("translate");
 const session = inject("session");
 const handle_crucial_error = inject("handle_crucial_error");
 
-const detect_list = ref(props.default_detect_list);
-
+// 调试时
+// const detect_list = ref(props.default_detect_list);
+const detect_list = ref([
+]);
 
 
 // 填报数据
@@ -121,15 +147,6 @@ const data = ref({
 const selected_point = ref(null);
 const points = ref([])
 
-// log_api("广播", "Client => Server", "开始连接");
-// const socket = new WebSocket(config.socket);
-//
-//
-// socket.onopen = () => {
-//   log_api("广播", "Client => Server", "连接成功");
-// }
-
-
 const group_all_points = ref([]);
 
 const notification = useNotification();
@@ -143,8 +160,6 @@ const collaborators = ref([]);
 
 // 附件列表
 const attachments_list = ref([]);
-
-
 
 function check_attachment({file, file_list}) {
   // 最大附件大小为200M
@@ -196,6 +211,7 @@ onMounted(async () => {
     log_api("草稿", "Client => Server", "询问是否有草稿");
     data.value = (await client.get("/drafts/record")).data;
     log_api("草稿", "Server => Client", "已加载草稿内容");
+
   } catch (e) {
     log_api("草稿", "Server => Client", "无草稿");
   }
@@ -234,22 +250,64 @@ onMounted(async () => {
   } catch (e) {
 
   }
+//  检查有没有沉积的检测
+  let list = props.default_detect_list;
+  if (list.length > 0) {
+    list.forEach(file => {
+      new_detection(file.fid)
+    })
+  }
 })
 
 const compute_method = ref('max')
 const thresh = ref(0.3);
 
 // 目标检测相关内容
+// 这个map是fid 对 task_id 和 result 的
 const detection_results = ref({
-
+  "61ff72448dda2b94c2fbd093": {
+    task_id: "61ff72488dda2b94c2fbd099"
+  }
 })
+const preview_task_id = ref(undefined);
+function handle_detection_preview(file) {
+  console.log("预览文件ID:", file.fid)
+  if (detection_results.value.hasOwnProperty(file.fid)) {
+    preview_task_id.value = detection_results.value[file.fid].task_id;
+  } else {
+    message.warning("现在还不能查看检测结果")
+  }
+}
 
-function commit_new_detection({file, event}) {
-  let response = JSON.parse(event.target.response)
-  let fid = response.id
-  file.fid = fid
-  file.url = storage.get_inline_url(fid)
-  //
+async function compute_number() {
+//  计算全部的数量
+  try {
+    let tasks = [];
+    for (const file in detection_results.value) {
+      tasks.push(detection_results.value[file].task_id)
+    }
+    let result = await client.post("/detector/compute", {
+      tasks,
+      method: compute_method.value,
+      threshold: thresh.value
+    })
+    message.success("数量计算完毕!");
+    data.value.num = result.data;
+  } catch (e) {
+    message.error("计算数量失败!")
+  }
+
+}
+
+async function delete_detection({file, file_list}) {
+  await delete_attachment({file, file_list});
+  if (detection_results.value.hasOwnProperty(file.fid)) {
+    delete detection_results.value[file.fid]
+  }
+  message.success("检测记录删除成功!")
+}
+
+function new_detection(fid) {
   let n_ref = ref(null);
   n_ref.value = notification.create({
     title: "识别任务状态",
@@ -295,11 +353,23 @@ function commit_new_detection({file, event}) {
           content: "任务已完成!",
           duration: 3000
         })
-        detection_results.value[data.task_id] = data.result;
+        detection_results.value[fid] = {
+          task_id: data.task_id,
+          // result: data.result
+        };
         console.log("任务完成")
         break;
     }
   }
+}
+
+function commit_new_detection({file, event}) {
+  let response = JSON.parse(event.target.response)
+  let fid = response.id
+  file.fid = fid
+  file.url = storage.get_thumbs_url(fid, 100, 100)
+  // 延迟触发 防止卡顿
+  setTimeout(() => new_detection(fid), 100)
 }
 
 function upload_file({file, data, headers, action, onFinish, onError, onProgress}) {
@@ -346,8 +416,11 @@ function upload_file({file, data, headers, action, onFinish, onError, onProgress
 
 }
 
+
+
 const message = useMessage();
-function evaluate() {
+// 校验表单
+function evaluate(show_error = false) {
   // 计算出表单，并加以验证
   let form = {
     group_id: session.value.user.groups[0],
@@ -355,13 +428,17 @@ function evaluate() {
     position: selected_point.value,
     time: data.value.time
   }
-  if (form.num < 0) {
+  let errored = false;
+  if (form.num < 0 && show_error) {
     message.error("雨燕数量不合法!")
-    return false;
+    form.num = undefined
+    errored = true;
   }
-  if (!form.position) {
+  if (!form.position && show_error) {
     message.error("请选择一个调查点!")
-    return false;
+    form.position = undefined
+    errored = true;
+
   }
   if (collaborators.value.length > 0) {
     form.collaborators = collaborators.value.map(sth => sth);
@@ -375,22 +452,67 @@ function evaluate() {
   if (attachments_list.value.length > 0) {
     form.attachments = attachments_list.value.map(file => file.fid)
   }
-  if (form.time === undefined) {
+  if (form.time === undefined && show_error) {
     message.error("请指定一个时间!")
+    errored = true;
   }
-  if (form.time > new Date().getTime()) {
+  if (form.time > new Date().getTime() && show_error) {
     message.error("不能选择未来的时间点!")
+    form.time = undefined;
+    errored = true;
   }
   form.time = form.time + (new Date(form.time).getTimezoneOffset())
 
-  return form;
+  return {form, errored};
 }
 
+let have_update = false;
+
+async function update_draft(_) {
+  if (!have_update) {
+    return
+  }
+  have_update = false;
+  let {form, errored} = evaluate(false);
+  let msg = message.loading("正在更新草稿...");
+  try {
+    await client.patch("/drafts/record", form);
+    msg.type = "success";
+    msg.content = "草稿已更新!";
+    setTimeout(() => msg.destroy(), 3000);
+  } catch (e) {
+    msg.type = "error";
+    msg.content = "草稿更新失败";
+    setTimeout(() => msg.destroy(), 3000)
+  }
+}
+
+const reload = inject("reload");
 
 async function submit() {
-  let form = evaluate();
-  console.log(form);
+  let {form, errored} = evaluate(true);
+  if (errored) {
+    return
+  }
+  try {
+    let result = await client.post("/records", form);
+    message.success("调查报告已提交!");
+    reload();
+  } catch (e) {
+    if (e.response) {
+      message.error(t(e.response.data.message))
+    }
+  }
 }
+
+watch(() => {
+  return data.value
+}, () =>{
+  have_update = true
+}, { deep: true })
+
+setInterval(update_draft, 5000)
+
 </script>
 
 <style scoped>

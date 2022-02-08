@@ -202,7 +202,10 @@ const Declaration_strings = {
             cn: "直观的统计数据展示功能",
             en: "Intuitive statistics display function"
         }
-    ]
+    ],
+    accounts_line1: {
+        cn: "..."
+    }
 }
 
 const Header_strings = {
