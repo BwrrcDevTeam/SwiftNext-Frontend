@@ -61,7 +61,7 @@ function get_user_description() {
   if (user.value.permission===1) {
     if (user.value.group) {
       return t({
-        "cn": user.value.group.name + "调查小组志愿者"
+        "cn": user.value.group.name + " 志愿者"
       })
     } else {
       return t({
@@ -75,8 +75,8 @@ onMounted(async () => {
   try {
     log_api("用户", "Client => Server", "获取用户信息");
     user.value = (await client.get("/users/" + props.uid)).data;
-    if (user.value.hasOwnProperty("group_id")) {
-      user.value.group = (await client.get("/groups/" + user.value.group_id)).data;
+    if (user.value.hasOwnProperty("group")) {
+      user.value.group = (await client.get("/groups/" + user.value.group)).data;
     }
     console.log(user.value);
     log_api("用户", "Server => Client", "获取到 "+ user.value.name +" 的信息");

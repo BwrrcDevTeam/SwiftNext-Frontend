@@ -9,10 +9,10 @@ import groups from "./groups";
 import storage from "./storage"
 
 const config = {
-    baseURL: "https://api.imlihe.com/",
+    baseURL: "https://console.bwrrc.org.cn/api/",
     // baseURL: "http://localhost:8000/",
     timeout: 10000,
-    socket: "wss://api.imlihe.com/",
+    socket: "wss://console.bwrrc.org.cn/api/",
 }
 
 const client = axios.create(config)
