@@ -28,7 +28,7 @@ const session = inject("session");
 
 
 function utc_to_local(utc_stamp) {
-  let local_time = utc_stamp + (new Date().getTimezoneOffset() * 60000);
+  let local_time = utc_stamp * 1000 + (new Date().getTimezoneOffset() * 60000);
   let date = new Date(local_time);
   return date.toLocaleString();
 }

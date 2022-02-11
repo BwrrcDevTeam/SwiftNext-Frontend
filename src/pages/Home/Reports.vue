@@ -12,7 +12,7 @@
             "en": "or"
           }) }}
         </n-el>
-        <n-button secondary type="primary" size="large" round>
+        <n-button secondary type="primary" size="large" round @click="stage='filling'">
           {{ t(strings.manuel) }}
         </n-button>
       </n-space>

@@ -210,7 +210,16 @@ onMounted(async () => {
 //  2. 询问有无草稿
   try {
     log_api("草稿", "Client => Server", "询问是否有草稿");
-    data.value = (await client.get("/drafts/record")).data;
+    let draft = (await client.get("/drafts/record")).data;
+    data.value = draft;
+    if (draft.detect_list) {
+      detect_list.value += draft.detect_list;
+    }
+    if (draft.detection_results) {
+      detection_results.value += draft.detection_results;
+    }
+
+
     log_api("草稿", "Server => Client", "已加载草稿内容");
 
   } catch (e) {
@@ -324,12 +333,22 @@ function new_detection(fid) {
     content: "排队中..."
   })
   let ws = new WebSocket(config.socket + "detector/task/ws");
+  let heartbeat = undefined;
   ws.onopen = () => {
   //  双工连接打开后，发送检测请求
     ws.send(JSON.stringify({
       attachment: fid
     }))
     n_ref.value.content = "请求已发送"
+    heartbeat = setInterval(() => {
+      ws.send(JSON.stringify({
+        pong: "Hello!!"
+      }))
+    }, 1000)
+  }
+  ws.onclose = () => {
+    console.log("WebSocket连接断开!")
+    clearInterval(heartbeat);
   }
 
   ws.onmessage = (event) => {
@@ -471,7 +490,7 @@ function evaluate(show_error = false) {
     form.time = undefined;
     errored = true;
   }
-  form.time = form.time + (new Date(form.time).getTimezoneOffset())
+  form.time = form.time / 1000 + (new Date().getTimezoneOffset() * 60)
 
   return {form, errored};
 }
@@ -486,6 +505,8 @@ async function update_draft(_) {
   let {form, errored} = evaluate(false);
   let msg = message.loading("正在更新草稿...");
   try {
+    form.detect_list = detect_list.value;
+    form.detection_results = detection_results.value;
     await client.patch("/drafts/record", form);
     msg.type = "success";
     msg.content = "草稿已更新!";
