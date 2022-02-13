@@ -14,6 +14,7 @@
   </n-modal>
   <n-grid cols="1 800:2">
     <n-grid-item style="padding: 10px;">
+      <n-h3>必填项</n-h3>
       <n-form-item required label="调查点">
         <n-select filterable :options="group_all_points" v-model:value="selected_point" style="max-width: 200px;"></n-select>
       </n-form-item>
@@ -25,37 +26,9 @@
       <n-form-item required label="时间">
         <n-date-picker v-model:value="data.time" style="max-width: 200px;" type="datetime"></n-date-picker>
       </n-form-item>
-      <n-form-item label="检测图片">
-        <n-upload
-            :action="storage.get_upload_url()"
-            list-type="image-card"
-            v-model:file-list="detect_list"
-            :on-finish="commit_new_detection"
-            with-credentials
-            @preview="handle_detection_preview"
-            :on-remove="delete_detection"
-        >
-
-        </n-upload>
-      </n-form-item>
-      <n-card title="检测设置" style="margin-bottom: 10px;">
-        <n-form-item label="最终结果计算方式">
-          <n-select :options="[{value: 'max', label: '多张取最大值'}, {value: 'sum', label: '多张总和'}]" v-model:value="compute_method">
-          </n-select>
-        </n-form-item>
-        <n-form-item label="置信度">
-          <n-slider v-model:value="thresh" :min="0" :max="1" :step="0.01">
-          </n-slider>
-
-        </n-form-item>
-        <n-input-number min="0" max="1" step="0.01" v-model:value="thresh">
-        </n-input-number>
-        <br>
-
-        <n-button @click="compute_number" type="info" style="margin:auto; display: block">计算数量</n-button>
-      </n-card>
     </n-grid-item>
     <n-grid-item style="padding: 10px;">
+      <n-h3>选填项</n-h3>
       <n-form-item label="协作者">
         <n-select :options="all_users" multiple v-model:value="collaborators" filterable size="large">
 
@@ -87,7 +60,7 @@
 <script setup>
 import {
   NButton,
-  NCard,
+  NH3,
   NDatePicker,
   NFormItem,
   NGrid,
@@ -115,12 +88,7 @@ import Detection from "../../components/Detection.vue";
 import SparkMD5 from "spark-md5";
 
 
-const props = defineProps({
-  default_detect_list: {
-    type: Array,
-    default: () => [],
-  },
-})
+
 const t = inject("translate");
 
 const session = inject("session");
@@ -260,22 +228,6 @@ onMounted(async () => {
   } catch (e) {
 
   }
-//  检查有没有沉积的检测
-  let list = props.default_detect_list;
-  if (list.length > 0) {
-    list.forEach(file => {
-      new_detection(file.fid)
-    })
-  }
-  detect_list.value = props.default_detect_list.map(ele => {
-    return {
-      fid: ele.fid,
-      url: storage.get_thumbs_url(ele.fid, 100, 100),
-      id: ele.fid,
-      name: ele.name,
-      status: "finished"
-    }
-  })
 })
 
 const compute_method = ref('max')

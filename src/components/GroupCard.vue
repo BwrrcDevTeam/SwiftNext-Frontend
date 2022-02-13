@@ -81,7 +81,7 @@
 
   <n-skeleton text :repeat="3" v-if="loading">
   </n-skeleton>
-  <n-card v-else>
+  <n-card v-else content-style="padding: 0;">
     <template #cover>
       <div v-if="!manageable">
         <img :src="storage.get_inline_url(group.cover)" v-if="group.hasOwnProperty('cover') && group.cover"
@@ -112,11 +112,11 @@
     <template #header>
       <n-h1>{{ group.name }}</n-h1>
     </template>
-    <n-list bordered>
+    <n-list>
       <template #header>
         <n-space justify="space-between">
-          <n-h2 style="margin-bottom: 0">调查点</n-h2>
-          <n-button v-if="props.manageable" @click="edit_points">调查点管理</n-button>
+          <n-h2 style="margin-bottom: 0;margin-left: 19px;">调查点</n-h2>
+          <n-button v-if="props.manageable" @click="edit_points" style="margin-right: 19px;">调查点管理</n-button>
         </n-space>
       </template>
       <n-table>
@@ -139,22 +139,22 @@
         还没有调查点
       </n-empty>
     </n-list>
-    <n-list bordered>
+    <n-list>
       <template #header>
         <n-space justify="space-between">
           <div style="display: flex;width: fit-content;">
-            <n-h2 style="margin-bottom: 0">组员</n-h2>
+            <n-h2 style="margin-bottom: 0;margin-left: 19px;">组员</n-h2>
             <!--            <n-input placeholder="搜索" style="margin-left: 10px; width: 130px;"></n-input>-->
           </div>
-          <n-button v-if="props.manageable" @click="show_invitation = true;">创建邀请</n-button>
+          <n-button v-if="props.manageable" @click="show_invitation = true;" style="margin-right: 19px;">创建邀请</n-button>
         </n-space>
       </template>
       <UserLine v-for="uid in members" :uid="uid"
                 style="margin-left: 20px;margin-top: 5px;margin-bottom: 5px;"></UserLine>
     </n-list>
-
-    <n-card v-if="members.includes(session.user.uid) && (!props.brief)">
+    <n-card v-if="members.includes(session.user.uid) && (!props.brief)" :bordered="false">
       <template #header>
+        <n-divider></n-divider>
         <n-h2>重要操作</n-h2>
       </template>
       <n-popconfirm @positive-click="quit_group">
@@ -187,6 +187,7 @@ import {
   NInput,
   NModal,
   NPopconfirm,
+    NDivider,
   useNotification,
   NUpload,
   NDynamicInput,

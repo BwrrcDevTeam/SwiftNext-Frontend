@@ -218,6 +218,10 @@ const Header_strings = {
             cn: "社区",
             en: "Community"
         },
+        detector: {
+            cn: "检测",
+            en: "Detector"
+        }
     }
 }
 

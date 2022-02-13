@@ -19,6 +19,7 @@
 import {inject, onMounted, ref} from "vue";
 import {client, records} from "../apis"
 import {NDataTable, NEmpty, NCard} from "naive-ui";
+import {time_to_db, time_from_db} from "../utils";
 
 
 const my_records = ref([]);
@@ -27,17 +28,11 @@ const engaged = ref([]);
 const session = inject("session");
 
 
-function utc_to_local(utc_stamp) {
-  let local_time = utc_stamp * 1000 + (new Date().getTimezoneOffset() * 60000);
-  let date = new Date(local_time);
-  return date.toLocaleString();
-}
-
 async function format_records(records) {
   return await Promise.all(records.map(async record => {
     return {
       ...record,
-      create_time: utc_to_local(record.time),
+      create_time: time_from_db(record.time).toLocaleString(),
       project_name: project_names[record.project],
       position_name: await get_position_name(record.position),
     }

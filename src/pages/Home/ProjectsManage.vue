@@ -90,6 +90,8 @@ import {
 } from "naive-ui";
 import {onMounted, reactive, ref} from "vue";
 
+import {time_to_db, time_from_db} from "../../utils";
+
 import {client} from "../../apis"
 
 const projects = ref([]);
@@ -116,23 +118,6 @@ function clean_form() {
   form_feedback.start_time = undefined;
 }
 
-function utc_to_local_time(utc_stamp) {
-  let date = new Date(utc_stamp);
-  let local_date = new Date(date.getTime() + date.getTimezoneOffset() * 60 * 1000);
-  return local_date.toISOString().slice(0, 10);
-}
-
-function utc_to_local_time_stamp(utc_stamp) {
-  let date = new Date(utc_stamp);
-  let local_date = new Date(date.getTime() + date.getTimezoneOffset() * 60 * 1000);
-  return local_date.getTime();
-}
-
-function local_time_stamp_to_utc(local_stamp) {
-  let date = new Date(local_stamp);
-  let utc_date = new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
-  return utc_date.getTime();
-}
 
 const message = useMessage();
 
@@ -156,7 +141,7 @@ async function submit() {
     form_feedback.title = undefined;
   }
   // 将本地时间转换为UTC时间戳
-  let utc_stamp = local_time_stamp_to_utc(new Date(new_form.start_time).getTime())
+  let utc_stamp = time_to_db(new_form.start_time);
   let form = {
     title: new_form.title,
     start_time: utc_stamp,
@@ -179,7 +164,7 @@ async function load_projects() {
   const _projects = await client.get("/projects");
   projects.value = _projects.data.map(proj => {
     // 导入的时候转成本地时间
-    proj.start_time = utc_to_local_time_stamp(proj.start_time);
+    proj.start_time = time_from_db(proj.start_time).getTime();
     return proj;
   });
   console.log(projects);
@@ -228,7 +213,7 @@ async function submit_edit() {
     edit_feedback.start_time = "请选择项目开始时间";
     return;
   }
-  let utc_stamp = local_time_stamp_to_utc(new Date(on_editing_project.value.start_time).getTime())
+  let utc_stamp = time_to_db(on_editing_project.value.start_time);
   let form = {
     title: on_editing_project.value.title,
     start_time: utc_stamp,

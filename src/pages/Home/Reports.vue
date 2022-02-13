@@ -1,45 +1,25 @@
 <template>
-  <n-card :title="t(strings.title)" :closable="stage!=='select_method'" @close="close_card" class="new_report" :class="stage">
-
-    <transition mode="out-in" name="fade">
-      <n-space justify="center" class="select_method" v-if="stage==='select_method'">
-        <n-button type="primary" size="large" round @click="stage='upload_images'">
-          {{ t(strings.from_images) }}
-        </n-button>
-        <n-el tag="span" class="or">
-          {{ t({
-            "cn": "或",
-            "en": "or"
-          }) }}
-        </n-el>
-        <n-button secondary type="primary" size="large" round @click="stage='filling'">
-          {{ t(strings.manuel) }}
-        </n-button>
-      </n-space>
-      <n-upload v-else-if="stage==='upload_images'" :action="storage.get_upload_url()" v-model:file-list="image_list" class="upload" @before-upload="check_type"
-                :with-credentials="true" :on-remove="delete_image" @finish="upload_finish">
-        <n-upload-dragger class="drag">
-          <div style="margin-bottom: 12px;">
-            <n-icon size="40">
-              <Images/>
-            </n-icon>
-          </div>
-
-          <n-text>
-            {{ t(strings.upload_tips) }}
-          </n-text>
-          <n-p>
-            {{ t(strings.upload_tips_2) }}
-          </n-p>
-        </n-upload-dragger>
-        <n-button type="info" size="large" secondary v-if="image_list.length > 0" style="margin-top: 20px;" @click="detect_and_create">提交检测</n-button>
-      </n-upload>
-    </transition>
-    <n-collapse-transition :show="stage==='filling'">
-      <NewReport :default_detect_list="image_list"></NewReport>
-    </n-collapse-transition>
+  <n-card v-if="projects===0" class="center_alert">
+    <n-result status="info" title="填报未开放" description="没有运行中的调查项目">
+      <template #footer>
+        <n-button @click="router.push({name: 'home'})">看看别的?</n-button>
+      </template>
+    </n-result>
   </n-card>
-  <n-collapse-transition :show="stage!=='filling'">
+  <n-card v-else :title="t(strings.title)" :closable="route.name==='home_reports_new'" @close="close_card"
+          class="new_report">
+    <n-collapse-transition :show="route.name!=='home_reports_new'">
+      <n-space justify="center" class="select_method" v-if="route.name!=='home_reports_new'">
+        <LoginButton style="min-width: 200px;min-height: 50px;" @click="new_report">新建填报</LoginButton>
+      </n-space>
+    </n-collapse-transition>
+    <n-collapse-transition :show="route.name==='home_reports_new'">
+      <router-view/>
+    </n-collapse-transition>
+
+
+  </n-card>
+  <n-collapse-transition :show="route.name!=='home_reports_new'">
     <n-card :title="t(strings.history)" style="margin-top: 20px;">
       <HistoryRecords/>
     </n-card>
@@ -48,106 +28,91 @@
 </template>
 
 <script setup>
-import {NButton, NCard, NEl, NEmpty, NIcon, NP, NSpace, NText, NUpload, NUploadDragger, useMessage, NCollapseTransition} from 'naive-ui'
+import {
+  NButton,
+  NCard,
+  NEl,
+  NResult,
+  NIcon,
+  NP,
+  NSpace,
+  NText,
+  NUpload,
+  NUploadDragger,
+  useMessage,
+  NCollapseTransition
+} from 'naive-ui';
 import {inject, onMounted, onUnmounted, ref} from "vue";
 import strings from "../../strings/Home/Reports.json";
-import NewReport from "./NewReport.vue";
 
-import Images from "@vicons/ionicons5/Images";
-
-import {storage} from "../../apis";
+import {client, storage} from "../../apis";
 import HistoryRecords from "../../components/HistoryRecords.vue";
+import {useRoute, useRouter} from "vue-router";
+import LoginButton from "../../components/LoginButton.vue";
 
 const t = inject("translate")
 
-const stage = ref('select_method')
-
-const image_list = ref([]);
 const message = useMessage();
 
-async function close_card() {
-  await clean_images()
-  stage.value='select_method'
+function close_card() {
+  router.push({name: 'home_reports'})
 }
 
-function upload_finish({ file, event }) {
-  file.fid = JSON.parse(event.target.response).id;
+const projects = ref(undefined);
+
+onMounted(async () => {
+  projects.value = (await client.get("/projects/running")).data.length;
+})
+
+function new_report() {
+  router.push({name: 'home_reports_new'})
 }
 
-async function clean_images() {
-  if (stage.value === 'upload_images') {
-    for (const item of image_list.value) {
-      console.log(item)
-      await storage.delete_file(item.response.id)
-    }
-  }
-}
-
-async function check_type({file, file_list}) {
-  if (file.file.type !== 'image/jpeg' && file.file.type !== 'image/png') {
-    message.error(t(strings.type_error));
-    return false;
-  }
-  const {size} = file.file;
-  if (size > 1024 * 1024 * 50) {
-    message.error(t(strings.size_error));
-    return false;
-  }
-  return true;
-}
-
-async function delete_image({file, file_list}) {
-  console.log(file)
-  if (file.status === 'uploading') {
-    return true;
-  }
-  try {
-    await storage.delete_file(file.fid);
-    message.success(t(strings.delete_success));
-    return true
-  } catch (e) {
-    console.log(e)
-    message.error(t(strings.delete_error));
-    return false
-  }
-}
-
-async function detect_and_create() {
-  stage.value = 'filling'
-}
+const router = useRouter();
+const route = useRoute();
 </script>
 
 <style scoped>
-  .or {
-    margin: 0 10px;
-    line-height: 40px;
-  }
-  .n-space.select_method {
-    height: 224px;
-    align-items: center;
-  }
-  .upload {
-    height: max-content;
-    align-items: center;
-    text-align: center;
-    margin: auto;
-    width: 100%;
-    max-width: 500px;
-  }
-  .drag {
-    width: 100%;
-  }
-  .fade-enter-active, .fade-leave-active {
-    transition: opacity .2s ease-in-out;
-  }
-  .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
-    opacity: 0;
-  }
-  .new_report {
-    height: max-content;
-    transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+.or {
+  margin: 0 10px;
+  line-height: 40px;
+}
 
+.n-space.select_method {
+  height: 224px;
+  align-items: center;
+}
+
+.upload {
+  height: max-content;
+  align-items: center;
+  text-align: center;
+  margin: auto;
+  width: 100%;
+  max-width: 500px;
+}
+
+.drag {
+  width: 100%;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .2s ease-in-out;
+}
+
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */
+{
+  opacity: 0;
+}
+
+.new_report {
+  height: max-content;
+  transition: all .2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.center_alert {
+  padding: 20px;
+}
 </style>
 
 <style>
@@ -156,6 +121,7 @@ async function detect_and_create() {
   padding: 20px;
   max-width: 500px;
 }
+
 @media screen and (max-width: 600px) {
   .upload .n-upload-trigger {
     width: 100%;

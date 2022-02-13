@@ -37,6 +37,7 @@ import {Content_strings, Header_strings} from "../i18n";
 import {useRouter} from "vue-router";
 import Home from "@vicons/carbon/Home";
 import Communication24Regular from "@vicons/fluent/Communication24Regular";
+import BoxMargin from "@vicons/tabler/BoxMargin";
 import UserFilled from "@vicons/carbon/UserFilled";
 import Menu from "@vicons/carbon/Menu";
 import Close from "@vicons/carbon/Close";
@@ -161,6 +162,17 @@ const menu_options = [
     }),
     key: "community",
     icon: renderIcon(Communication24Regular)
+  },
+  {
+    label: (type, children) => h(resolveComponent("router-link"), {
+      to: {
+        name: "detector"
+      }
+    }, {
+      default: () => t(Header_strings.menu.detector)
+    }),
+    key: "detector",
+    icon: renderIcon(BoxMargin)
   }
 ]
 
@@ -171,6 +183,8 @@ router.afterEach((to, from) => {
     menu_value.value = "home";
   } else if (to.name.includes("community")) {
     menu_value.value = "community";
+  } else if (to.name.includes("detector")) {
+    menu_value.value = "detector";
   } else {
     menu_value.value = null;
   }
@@ -253,16 +267,9 @@ const side_menu_show = inject("side_menu_show");
   }
   @media screen and (max-width: 800px) {
     .main {
-      /*display: grid;*/
-      /*grid-template-columns: 150px repeat(4, 1fr);*/
-      /*grid-template-rows: 1fr;*/
-      /*grid-column-gap: 0;*/
-      /*grid-row-gap: 0;*/
-      display: grid;
-      grid-template-columns: 150px 1fr;
-      grid-template-rows: 1fr;
-      grid-column-gap: 0px;
-      grid-row-gap: 0px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
     }
     .logo {
       opacity: 0;
@@ -270,17 +277,15 @@ const side_menu_show = inject("side_menu_show");
       /*grid-area: 1 / 1 / 2 / 2;*/
     }
     .icon_menu {
-      grid-area: 1 / 1 / 2 / 2;
     }
     .menu {
-      grid-area: 1 / 2 / 2 / 3;
-      justify-content: right;
       width: max-content;
-
     }
     .config {
+      position: absolute;
       opacity: 0;
-      margin-left: 100vw;
+      left: 100vw;
+      /*width: 0;*/
     }
   }
   .icon_menu {

@@ -15,7 +15,19 @@ const routes = [
             {
                 path: "/reports",
                 name: "home_reports",
-                component: () => import("./pages/Home/Reports.vue"), // 新填报页
+                component: () => import("./pages/Home/Reports.vue"), // 填报页
+                children: [
+                    // {
+                    //     path: "/reports/:id",
+                    //     name: "home_reports_detail",
+                    //     component: () => import("./pages/Home/ReportsDetail.vue"), // 填报详情页
+                    // },
+                    {
+                        path: "/reports/new",
+                        name: "home_reports_new",
+                        component: () => import("./pages/Home/NewReport.vue"), // 新建填报页
+                    }
+                ]
             },
             {
                 path: "/group",
@@ -87,6 +99,14 @@ const routes = [
         path: "/code",
         name: "code_manual",
         component: () => import("./pages/Code.vue"),
+        meta: {
+            no_auth: true
+        }
+    },
+    {
+        path: "/detector",
+        name: "detector",
+        component: () => import("./pages/Detector.vue"),
         meta: {
             no_auth: true
         }

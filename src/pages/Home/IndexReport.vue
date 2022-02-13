@@ -2,7 +2,7 @@
   <n-grid cols="1 400:1 800:2 1200:3" x-gap="20" y-gap="20">
     <!--    分配到的任务-->
     <n-grid-item>
-      <n-card :title="t(strings.week_overview)">
+      <n-card :title="t(strings.week_overview)" class="index_card">
         <!--        本周已进行 n 次调查 / 本周尚未进行任何调查填报-->
         <n-alert type="info" v-if="week_reports.length===0" :title="t(strings.no_reports_this_week.title)" @click="router.push({'name': 'home_reports'})" class="clickable">
           <template #icon>
@@ -16,7 +16,7 @@
     </n-grid-item>
     <n-grid-item>
 <!--      项目信息-->
-      <n-card :title="t(strings.project_overview)">
+      <n-card :title="t(strings.project_overview)" class="index_card">
         <n-row>
           <n-col :span="12">
             <n-statistic :label="t(strings.project_num)">
@@ -35,7 +35,7 @@
     </n-grid-item>
     <n-grid-item>
 <!--      调查小组信息-->
-      <n-card :title="t(strings.group_overview)">
+      <n-card :title="t(strings.group_overview)" class="index_card">
         <n-alert type="warning" v-if="!session.user.hasOwnProperty('group')" :title="t(strings.no_group.title)" class="clickable" @click="router.push({name: 'home_group'})">
           <template #icon>
             <n-icon>
@@ -69,7 +69,7 @@
     </n-grid-item>
     <n-grid-item>
 <!--      通知-->
-      <n-card :title="t(strings.notifications)">
+      <n-card :title="t(strings.notifications)" class="index_card">
         <n-alert type="default" v-if="notifications.length===0" :show-icon="false">
 
           {{ t(strings.no_notifications) }}
@@ -184,5 +184,8 @@ function get_group_running_time() {
   }
   .clickable:active {
     filter: brightness(0.8);
+  }
+  .index_card {
+    height: 100%;
   }
 </style>
