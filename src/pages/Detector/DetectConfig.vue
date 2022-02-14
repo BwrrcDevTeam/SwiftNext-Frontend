@@ -39,22 +39,22 @@
         <n-ul>
           <n-li>
             <n-text>窗口大小：
-              <n-text depth="3">{{ preset_1.window_size }}</n-text>
+              <n-text depth="3">{{ preset_2.window_size }}</n-text>
             </n-text>
           </n-li>
           <n-li>
             <n-text>区块重叠：
-              <n-text depth="3">{{ preset_1.overlap }}</n-text>
+              <n-text depth="3">{{ preset_2.overlap }}</n-text>
             </n-text>
           </n-li>
           <n-li>
             <n-text>单区块最大数量：
-              <n-text depth="3">{{ preset_1.tile_max_num }}</n-text>
+              <n-text depth="3">{{ preset_2.tile_max_num }}</n-text>
             </n-text>
           </n-li>
           <n-li>
             <n-text>模型名称：
-              <n-text depth="3">{{ preset_1.model_name }}</n-text>
+              <n-text depth="3">{{ preset_2.model_name }}</n-text>
             </n-text>
           </n-li>
         </n-ul>
