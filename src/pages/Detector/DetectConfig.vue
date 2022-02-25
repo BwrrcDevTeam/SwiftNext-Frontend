@@ -1,7 +1,13 @@
 <template>
   <n-grid cols="1 400:2 800:3" x-gap="20" y-gap="20">
     <n-grid-item>
-      <n-card title="预设1" class="preset" hoverable id="preset1" :class="{target: preset===1}" @click="select(1)">
+      <n-card title="模式1" class="preset" hoverable id="preset1" :class="{target: preset===1}" @click="select(1)">
+        <n-text type="info">适用于</n-text>
+        <n-ul>
+          <n-li>图片分辨率中等或较低</n-li>
+          <n-li>雨燕在图片中较大</n-li>
+          <n-li>检测速度较快</n-li>
+        </n-ul>
         <n-text type="info">参数值</n-text>
         <n-ul>
           <n-li>
@@ -25,16 +31,16 @@
             </n-text>
           </n-li>
         </n-ul>
-        <n-text type="info">适用于</n-text>
-        <n-ul>
-          <n-li>图片分辨率中等或较低</n-li>
-          <n-li>雨燕在图片中较大</n-li>
-          <n-li>检测速度较快</n-li>
-        </n-ul>
       </n-card>
     </n-grid-item>
     <n-grid-item>
-      <n-card title="预设2" class="preset" hoverable id="preset2" :class="{target: preset===2}" @click="select(2)">
+      <n-card title="模式2" class="preset" hoverable id="preset2" :class="{target: preset===2}" @click="select(2)">
+        <n-text type="info">适用于</n-text>
+        <n-ul>
+          <n-li>图片分辨率较高</n-li>
+          <n-li>雨燕在图片中较小</n-li>
+          <n-li>检测速度较慢</n-li>
+        </n-ul>
         <n-text type="info">参数值</n-text>
         <n-ul>
           <n-li>
@@ -58,12 +64,7 @@
             </n-text>
           </n-li>
         </n-ul>
-        <n-text type="info">适用于</n-text>
-        <n-ul>
-          <n-li>图片分辨率较高</n-li>
-          <n-li>雨燕在图片中较小</n-li>
-          <n-li>检测速度较慢</n-li>
-        </n-ul>
+
       </n-card>
     </n-grid-item>
     <n-grid-item>

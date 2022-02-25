@@ -108,7 +108,7 @@ const routes = [
         name: "detector",
         component: () => import("./pages/Detector.vue"),
         meta: {
-            no_auth: true
+            no_auth: true // 暂时不需要登录
         }
     },
     // 走错了

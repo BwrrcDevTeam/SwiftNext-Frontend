@@ -65,6 +65,8 @@ const circle_status = ref('default');
 
 const message = useMessage();
 
+let fail_count = 0;
+
 async function polling() {
   if (!polling_alive.value) {
     return;
@@ -94,13 +96,18 @@ async function polling() {
       emit('finish', {task_id: task_id.value});
     }
   } catch (e) {
-    message.error("检测任务失败!");
-    if (!polling_alive.value) {
-      return;
+    fail_count += 1;
+    if (fail_count > 5) {
+      message.error("检测任务失败!");
+      if (!polling_alive.value) {
+        return;
+      }
+      emit('error', {error: e});
+      circle_status.value = "error";
+      description.value = "检测任务失败!";
+    } else {
+      polling_timeout.value = setTimeout(polling, 2000);
     }
-    emit('error', {error: e});
-    circle_status.value = "error";
-    description.value = "检测任务失败!";
   }
 
 

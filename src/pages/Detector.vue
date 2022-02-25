@@ -1,7 +1,7 @@
 <template>
 <!--  检测器-->
   <n-card title="新检测" class="module">
-    <n-steps :current="current_step" :status="current_status">
+    <n-steps :current="current_step" :status="current_status" :class="{'n-steps--vertical': is_mobile}">
       <n-step title="上传图片"></n-step>
       <n-step title="检测配置"></n-step>
       <n-step title="提交处理"></n-step>
@@ -30,7 +30,7 @@
     <template #action>
       <n-space justify="space-around">
         <n-button :disabled="current_step === 1" @click="last_step">上一步</n-button>
-        <n-button :disabled="(current_step === 4 || current_step === 1) && current_status !== 'error'" @click="cancel_current">取消</n-button>
+        <n-button :disabled="current_step === 1" @click="cancel_current">重置</n-button>
         <n-button :disabled="current_status!=='finish'" @click="next_step">{{ current_step !== 4 ? "下一步" : "完成" }}</n-button>
       </n-space>
     </template>
@@ -50,7 +50,7 @@ import {
     NImage,
     NCollapseTransition,
 } from 'naive-ui'
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
 import UploadImage from "./Detector/UploadImage.vue";
 import DetectConfig from "./Detector/DetectConfig.vue";
 
@@ -101,10 +101,12 @@ function last_step() {
 function next_step() {
   if (current_step.value === 4) {
     cancel_current(false);
+  } else {
+    current_step.value += 1;
+    current_status.value = 'process';
+    sync_local_cache();
   }
-  current_step.value += 1;
-  current_status.value = 'process';
-  sync_local_cache();
+
 }
 
 function wipe_local_cache() {
@@ -125,9 +127,13 @@ onMounted(() => {
     current_step.value = 1;
     current_status.value = 'process';
   }
-
+  update_mobile();
+  window.addEventListener('resize', update_mobile);
 })
 
+onUnmounted(() => {
+  window.removeEventListener('resize', update_mobile);
+})
 function stage_1_finished({fid}) {
   console.log(fid);
   current_fid.value = fid;
@@ -193,6 +199,14 @@ function stage_4_finish({threshold}) {
   detect_threshold.value = threshold;
   sync_local_cache();
 }
+const is_mobile = ref(false);
+
+function update_mobile() {
+  is_mobile.value = window.innerWidth < 600;
+}
+
+
+
 </script>
 
 <style scoped>
@@ -208,4 +222,11 @@ function stage_4_finish({threshold}) {
     margin: auto;
   }
 
+</style>
+
+<style>
+.image > img {
+  width: 100%;
+  margin: auto;
+}
 </style>

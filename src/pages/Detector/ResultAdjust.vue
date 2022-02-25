@@ -1,9 +1,7 @@
 <template>
   <n-spin :show="loading">
-    <div class="container" ref="container">
-      <canvas ref="canvas" class="canvas"
-              :style="{transform: `scale(${scale}) translateX(`+translate_x+`px) translateY(`+translate_y+`px)`}"/>
-    </div>
+    <n-image :src="storage.get_draw_url(props.task_id, threshold)" class="image_box">
+    </n-image>
   </n-spin>
 
   <n-card title="检测结果" class="result">
@@ -33,7 +31,8 @@ import {
   NFormItem,
   NStatistic,
   NSpin,
-  NButton, useMessage
+  NButton, useMessage,
+  NImage
 } from 'naive-ui';
 
 import {onMounted, onUnmounted, ref, watch} from "vue";
@@ -154,9 +153,11 @@ const emit = defineEmits(['finished']);
 const message = useMessage();
 
 async function save() {
+  let msg = message.loading('正在保存');
   await client.put("/detector/" + props.task_id, {
     threshold: threshold.value
   });
+  msg.destroy();
   message.success("保存成功!");
   emit("finished", {threshold});
 }
@@ -167,15 +168,28 @@ async function save() {
 
 }
 
-.container {
+.image_box {
+  min-height: 300px;
+  min-width: 300px;
   width: 100%;
   height: 100%;
-  max-height: calc(100vh - 300px);
-  overflow: hidden;
+}
+
+.image_box > img {
+  width: 90%;
+  margin: auto;
 }
 
 .result {
   max-width: 500px;
   margin: 50px auto;
 }
+</style>
+
+<style>
+.image_box > img {
+  width: 90%;
+  margin: auto;
+}
+
 </style>

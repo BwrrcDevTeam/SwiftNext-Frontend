@@ -1,4 +1,6 @@
 <template>
+  <n-modal v-model:show="deleting" preset="dialog" title="确认删除" content="系统不会保留任何数据，操作无法撤销" positive-text="确认" negative-text="取消" @positive-click="confirm_delete">
+  </n-modal>
   <div style="display: flex;justify-content: center;width: 100%; height: 200px;align-content: center;flex-direction: column" v-if="my_records.length === 0 && engaged.length===0">
     <n-empty size="huge" style="height: fit-content;">
     </n-empty>
@@ -16,9 +18,9 @@
 </template>
 
 <script setup>
-import {inject, onMounted, ref} from "vue";
+import {h, inject, onMounted, ref} from "vue";
 import {client, records} from "../apis"
-import {NDataTable, NEmpty, NCard} from "naive-ui";
+import {NDataTable, NEmpty, NCard, NButton, NModal} from "naive-ui";
 import {time_to_db, time_from_db} from "../utils";
 
 
@@ -81,8 +83,59 @@ const columns = [
   },
   {
     title: "操作",
+    key: "actions",
+    render(row) {
+      return [
+          h(
+              NButton,
+              {
+                size: "small",
+                type: "primary",
+
+              },
+              {
+                default: "编辑",
+              }
+          ),
+          h(
+              NButton,
+              {
+                size: "small",
+                type: "error",
+                style: "margin-left: 10px",
+                onClick: () => {
+                  deleting.value = row.id;
+                }
+              },
+              {
+                default: "删除",
+              }
+          )
+      ]
+    }
   }
 ]
+
+function on_edit() {
+
+}
+
+const deleting = ref(false);
+
+
+async function confirm_delete() {
+  if (deleting.value) {
+    let sth = await client.delete("/records/" + deleting.value);
+    console.log(sth);
+    deleting.value = false;
+    await get_project_names();
+
+    let data = (await client.get("/records/user/" + session.value.user.uid)).data;
+    my_records.value = await format_records(data.records);
+    console.log(await format_records(data.records));
+    engaged.value = await format_records(data.engaged_records);
+  }
+}
 </script>
 
 <style scoped>

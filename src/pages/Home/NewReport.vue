@@ -34,10 +34,10 @@
 
         </n-select>
       </n-form-item>
-      <n-form-item label="朝向">
-        <Compass v-model:orientation="data.orientation" style="width: 300px; height: 300px;margin:auto;"></Compass>
-        <n-button @click="data.orientation = undefined">清空</n-button>
-      </n-form-item>
+<!--      <n-form-item label="朝向">-->
+<!--        <Compass v-model:orientation="data.orientation" style="width: 300px; height: 300px;margin:auto;"></Compass>-->
+<!--        <n-button @click="data.orientation = undefined">清空</n-button>-->
+<!--      </n-form-item>-->
 
       <n-form-item label="备注">
         <n-input type="textarea" :autosize="{minRows: 3, maxRows: 7}" maxlength="114514" show-count v-model:value="data.description">
@@ -86,6 +86,7 @@ import Compass from "../../components/Compass.vue";
 import Detection from "../../components/Detection.vue";
 
 import SparkMD5 from "spark-md5";
+import {time_from_db, time_to_db} from "../../utils";
 
 
 
@@ -105,8 +106,8 @@ const data = ref({
   // 必备字段
   "position": null, // 调查点的ID
   // "specific_location": null, // 具体位置
-  num: 0, // 数量
-  time: new Date().getTime(), // 时间戳
+  num: undefined, // 数量
+  time: undefined, // 时间戳
 //  可选字段
   orientation: undefined, // 朝向
   description: "", // 备注
@@ -179,6 +180,14 @@ onMounted(async () => {
   try {
     log_api("草稿", "Client => Server", "询问是否有草稿");
     let draft = (await client.get("/drafts/record")).data;
+    draft.time = time_from_db(draft.time).getTime()
+    if (draft.position) {
+      selected_point.value = draft.position
+    }
+    if (draft.collaborators) {
+      collaborators.value = draft.collaborators
+    }
+
     data.value = draft;
     if (draft.detect_list) {
       detect_list.value += draft.detect_list;
@@ -187,7 +196,7 @@ onMounted(async () => {
       detection_results.value += draft.detection_results;
     }
 
-
+    console.log(draft)
     log_api("草稿", "Server => Client", "已加载草稿内容");
 
   } catch (e) {
@@ -217,12 +226,15 @@ onMounted(async () => {
     log_api("用户", "Client => Server", "获取全部用户")
     let result = (await client.get("/users")).data
     result.forEach(user => {
-      all_users.value.push({
-        name: user.name,
-        uid: user.uid,
-        label: user.name,
-        value: user.uid
-      })
+      if (user.uid !== session.value.user.uid) {
+        all_users.value.push({
+          name: user.name,
+          uid: user.uid,
+          label: user.name,
+          value: user.uid
+        })
+      }
+
     })
     log_api("用户", "Server => Client", "已加载 "+all_users.value.length + " 个用户")
   } catch (e) {
@@ -424,11 +436,8 @@ function evaluate(show_error = false) {
   if (collaborators.value.length > 0) {
     form.collaborators = collaborators.value.map(sth => sth);
   }
-  if (data.value.description.length > 0) {
+  if (data.value.description && data.value.description.length > 0) {
     form.description = data.value.description
-  }
-  if (data.value.orientation !== undefined) {
-    form.orientation = data.value.orientation
   }
   if (attachments_list.value.length > 0) {
     form.attachments = attachments_list.value.map(file => file.fid)
@@ -442,7 +451,7 @@ function evaluate(show_error = false) {
     form.time = undefined;
     errored = true;
   }
-  form.time = form.time / 1000 + (new Date().getTimezoneOffset() * 60)
+  form.time = time_to_db(form.time);
 
   return {form, errored};
 }
@@ -457,8 +466,6 @@ async function update_draft(_) {
   let {form, errored} = evaluate(false);
   let msg = message.loading("正在更新草稿...");
   try {
-    form.detect_list = detect_list.value;
-    form.detection_results = detection_results.value;
     await client.patch("/drafts/record", form);
     msg.type = "success";
     msg.content = "草稿已更新!";
@@ -470,6 +477,23 @@ async function update_draft(_) {
   }
 }
 
+let deleting_draft = false;
+
+async function delete_draft() {
+  let msg = message.loading("正在删除草稿...");
+  try {
+    await client.delete("/drafts/record");
+    msg.type = "success";
+    msg.content = "草稿已删除!";
+    setTimeout(() => msg.destroy(), 3000);
+  } catch (e) {
+    msg.type = "error";
+    msg.content = "草稿删除失败";
+    setTimeout(() => msg.destroy(), 3000)
+  }
+}
+
+
 const reload = inject("reload");
 
 async function submit() {
@@ -479,8 +503,14 @@ async function submit() {
   }
   try {
     let result = await client.post("/records", form);
-    message.success("调查报告已提交!");
-    reload();
+    notification.success({
+      title: "提交成功!",
+      description: "调查报告已提交!",
+      duration: 3000
+    })
+    update_draft = () => {};
+    await delete_draft();
+    await router.push({name: "home_reports"});
   } catch (e) {
     if (e.response) {
       message.error(t(e.response.data.message))
@@ -493,6 +523,10 @@ watch(() => {
 }, () =>{
   have_update = true
 }, { deep: true })
+
+watch(selected_point, () => {
+  have_update = true
+})
 
 setInterval(update_draft, 5000)
 

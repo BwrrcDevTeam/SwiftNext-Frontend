@@ -27,11 +27,15 @@ function get_download_url(fid) {
     return config.baseURL + "storage/download/" + fid
 }
 
+function get_draw_url(task_id, threshold) {
+    return config.baseURL + "detector/" + task_id + "/draw?threshold=" + threshold
+}
+
 export default {
     get_upload_url,
     get_inline_url,
     get_download_url,
     get_thumbs_url,
     delete_file,
-    detect_image
+    get_draw_url
 }
