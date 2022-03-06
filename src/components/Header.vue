@@ -1,23 +1,30 @@
 <template>
   <div class="main">
-    <n-icon class="icon_menu" :class="is_computer? 'hide' : 'show'" :size="25" @click="side_menu_show = !side_menu_show">
+    <n-icon class="icon_menu" :class="is_computer? 'hide' : 'show'" :size="25"
+            @click="side_menu_show = !side_menu_show" v-if="route.name && route.name.includes('home')">
       <transition name="fade" mode="out-in">
         <Close v-if="side_menu_show"></Close>
         <Menu v-else></Menu>
       </transition>
-
+    </n-icon>
+    <n-icon class="icon_menu" v-else :size="25">
+      <transition name="fade" mode="out-in">
+        <LightModeOutlined v-if="theme==='dark'" @click="theme='light'"/>
+        <DarkModeOutlined v-else @click="theme='dark'"/>
+      </transition>
     </n-icon>
     <div class="logo" @click="router.push({'name': 'home_index'})">SwiftNext</div>
     <n-menu class="menu" :options="menu_options" :value="menu_value"/>
     <div class="config">
       <SiteConfig/>
       <div style="width: 30px;"/>
-      <n-dropdown v-if="session.hasOwnProperty('user')" :trigger="is_computer? 'hover': 'click'" :options="login_options" @select="handle_select">
-<!--        登录后的用户头像-->
+      <n-dropdown v-if="session.hasOwnProperty('user')" :trigger="is_computer? 'hover': 'click'"
+                  :options="login_options" @select="handle_select">
+        <!--        登录后的用户头像-->
         <n-avatar round :src="session.user.avatar" v-if="session.user.hasOwnProperty('avatar')">
         </n-avatar>
         <n-avatar round v-else>
-          {{session.user.name}}
+          {{ session.user.name }}
         </n-avatar>
       </n-dropdown>
       <n-dropdown v-else :trigger="is_computer? 'hover': 'click'" :options="not_login_options" @select="handle_select">
@@ -31,22 +38,25 @@
 </template>
 
 <script setup>
-import {NAvatar, NDropdown, NIcon, NMenu, useNotification} from 'naive-ui';
+import {NAvatar, NDropdown, NIcon, NMenu, useNotification, NText} from 'naive-ui';
 import {h, inject, onUnmounted, ref, resolveComponent} from "vue";
 import {Content_strings, Header_strings} from "../i18n";
-import {useRouter} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import Home from "@vicons/carbon/Home";
 import Communication24Regular from "@vicons/fluent/Communication24Regular";
 import BoxMargin from "@vicons/tabler/BoxMargin";
 import UserFilled from "@vicons/carbon/UserFilled";
 import Menu from "@vicons/carbon/Menu";
 import Close from "@vicons/carbon/Close";
+import LightModeOutlined from "@vicons/material/LightModeOutlined";
+import DarkModeOutlined from "@vicons/material/DarkModeOutlined";
 
 import SiteConfig from "./SiteConfig.vue";
 import {log_api, log_error, update_session, users} from '../apis';
 
 const t = inject("translate");
 const router = useRouter();
+const route = useRoute();
 
 const session = inject("session");
 
@@ -86,6 +96,7 @@ const not_login_options = [
 
 const handle_crucial_error = inject("handle_crucial_error");
 const notification = useNotification();
+const theme = inject("theme");
 const login = inject("login");
 
 const reload = inject("reload");
@@ -136,8 +147,8 @@ async function handle_select(key) {
   }
 }
 
-function renderIcon (icon) {
-  return () => h(NIcon, null, { default: () => h(icon) })
+function renderIcon(icon) {
+  return () => h(NIcon, null, {default: () => h(icon)})
 }
 
 const menu_options = [
@@ -194,117 +205,138 @@ const side_menu_show = inject("side_menu_show");
 </script>
 
 <style scoped>
+.main {
+  height: 70px;
+  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: 1fr;
+  grid-column-gap: 0;
+  grid-row-gap: 0;
+  padding-left: 30px;
+  padding-right: 0;
+  transition: border-bottom-color .3s cubic-bezier(.4, 0, .2, 1);
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  /*margin-left: 30px;*/
+  line-height: 70px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  display: flex;
+  width: 100px;
+  grid-area: 1 / 1 / 2 / 2;
+  transition: all .2s cubic-bezier(.4, 0, .2, 1);
+  user-select: none;
+}
+
+.icon_menu.hide {
+  opacity: 0;
+  display: none;
+}
+
+.icon_menu.show {
+  opacity: 1;
+}
+
+.light .logo {
+  color: #000;
+}
+
+.dark .logo {
+  color: #fff;
+}
+
+.menu {
+  display: flex;
+  align-items: center;
+  grid-area: 1 / 2 / 2 / 4;
+}
+
+.config {
+  grid-area: 1 / 4 / 2 / 6;
+  height: 70px;
+  line-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s cubic-bezier(.4, 0, .2, 1);
+}
+
+.dummy_avatar {
+  width: 23px;
+  height: 23px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.dark .dummy_avatar {
+  color: white;
+}
+
+.light .dummy_avatar {
+  color: black;
+}
+
+.light .main {
+  border-bottom: 1px solid #eee;
+}
+
+.dark .main {
+  border-bottom: 1px solid #333;
+}
+
+@media screen and (max-width: 800px) {
   .main {
-    height: 70px;
-    align-items: center;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: 1fr;
-    grid-column-gap: 0;
-    grid-row-gap: 0;
-    padding-left: 30px;
-    padding-right: 0;
-    transition: border-bottom-color .3s cubic-bezier(.4, 0, .2, 1);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
   }
+
   .logo {
-    font-size: 24px;
-    font-weight: bold;
-    /*margin-left: 30px;*/
-    line-height: 70px;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    display: flex;
-    width: 100px;
-    grid-area: 1 / 1 / 2 / 2;
-    transition: all .2s cubic-bezier(.4, 0, .2, 1);
-    user-select: none;
-  }
-
-  .icon_menu.hide {
     opacity: 0;
-    display: none;
-  }
-  .icon_menu.show {
-    opacity: 1;
-  }
-  .light .logo {
-    color: #000;
-  }
-  .dark .logo {
-    color: #fff;
-  }
-  .menu {
-    display: flex;
-    align-items: center;
-    grid-area: 1 / 2 / 2 / 4;
-  }
-  .config {
-    grid-area: 1 / 4 / 2 / 6;
-    height: 70px;
-    line-height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all .2s cubic-bezier(.4, 0, .2, 1);
+    margin-left: -100vw;
+    /*grid-area: 1 / 1 / 2 / 2;*/
   }
 
-  .dummy_avatar {
-    width: 23px;
-    height: 23px;
-    text-align: center;
-    vertical-align: middle;
-  }
-  .dark .dummy_avatar {
-    color: white;
-  }
-  .light .dummy_avatar {
-    color: black;
-  }
-  .light .main {
-    border-bottom: 1px solid #eee;
-  }
-  .dark .main {
-    border-bottom: 1px solid #333;
-  }
-  @media screen and (max-width: 800px) {
-    .main {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-    }
-    .logo {
-      opacity: 0;
-      margin-left: -100vw;
-      /*grid-area: 1 / 1 / 2 / 2;*/
-    }
-    .icon_menu {
-    }
-    .menu {
-      width: max-content;
-    }
-    .config {
-      position: absolute;
-      opacity: 0;
-      left: 100vw;
-      /*width: 0;*/
-    }
-  }
   .icon_menu {
-    transition: all .2s cubic-bezier(.4, 0, .2, 1);
   }
-  .icon_menu:hover {
-    /*color: #62d3ad;*/
-    filter: brightness(.8);
+
+  .menu {
+    width: max-content;
   }
-  .icon_menu:active {
-    filter: brightness(.5);
+
+  .config {
+    position: absolute;
+    opacity: 0;
+    left: 100vw;
+    /*width: 0;*/
   }
-  .fade-enter-active, .fade-leave-active {
-    transition: all .2s ease-in-out;
-  }
-  .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
-    /*opacity: 0;*/
-    filter: brightness(0);
-  }
+}
+
+.icon_menu {
+  transition: all .2s cubic-bezier(.4, 0, .2, 1);
+}
+
+.icon_menu:hover {
+  /*color: #62d3ad;*/
+  filter: brightness(.8);
+}
+
+.icon_menu:active {
+  filter: brightness(.5);
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: all .2s ease-in-out;
+}
+
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */
+{
+  /*opacity: 0;*/
+  filter: brightness(0);
+}
 </style>
 
 <style>

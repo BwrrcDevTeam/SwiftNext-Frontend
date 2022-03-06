@@ -1,11 +1,11 @@
 <template>
-<!--  加入小组模态框-->
+  <!--  加入小组模态框-->
   <n-modal v-model:show="show_join_group" preset="card" style="max-width: 400px;">
     <template #header>
       加入调查小组
     </template>
     <n-text depth="3">加入调查小组需要小组长提供的邀请码！</n-text>
-    <n-form-item :feedback="invitation_feedback.message" :validation-status="invitation_feedback.status" >
+    <n-form-item :feedback="invitation_feedback.message" :validation-status="invitation_feedback.status">
       <n-input placeholder="邀请码" v-model:value="invitation_code" @keydown.enter="join_group"></n-input>
     </n-form-item>
     <template #action>
@@ -19,14 +19,15 @@
       </n-space>
     </template>
   </n-modal>
-  <n-card :title="t(strings.joined)">
+  <n-card :title="t(strings.joined)" v-if="session.permission === 1">
     <template #header-extra>
       <n-button secondary type="primary" @click="show_join_group=true">
-        {{t(strings.join)}}
+        {{ t(strings.join) }}
       </n-button>
     </template>
-<!--    已加入的小组-->
-    <n-alert type="warning" v-if="!session.user.group" :title="t(strings.no_group.title)" class="clickable" @click="show_join_group=true">
+    <!--    已加入的小组-->
+    <n-alert type="warning" v-if="!session.user.group" :title="t(strings.no_group.title)" class="clickable"
+             @click="show_join_group=true">
       <template #icon>
         <n-icon>
           <GroupOffOutlined/>
@@ -39,8 +40,8 @@
     </GroupCard>
 
   </n-card>
-<!--  创建小组模态框-->
-  <n-modal v-model:show="show_create_group" preset="card" style="max-width: 600px;" v-if="session.permission > 1">
+  <!--  创建小组模态框-->
+  <n-modal v-model:show="show_create_group" preset="card" style="max-width: 600px;">
     <template #header>
       创建调查小组
     </template>
@@ -53,16 +54,18 @@
         <n-input placeholder="调查点名称" v-model:value="value.name" autosize style="margin-right: 10px; width: 100%;">
 
         </n-input>
-        <n-input-number placeholder="经度" v-model:value="value.longitude" style="margin-right: 10px;max-width: 150px;width: 100%;" :step="0.0001" max="180" min="-180">
+        <n-input-number placeholder="经度" v-model:value="value.longitude"
+                        style="margin-right: 10px;max-width: 150px;width: 100%;" :step="0.0001" max="180" min="-180">
 
         </n-input-number>
-        <n-input-number placeholder="纬度" v-model:value="value.latitude" :step="0.0001" max="90" min="-90" style="max-width: 150px;width: 100%;">
+        <n-input-number placeholder="纬度" v-model:value="value.latitude" :step="0.0001" max="90" min="-90"
+                        style="max-width: 150px;width: 100%;">
 
         </n-input-number>
       </div>
     </n-dynamic-input>
 
-    <n-form-item :feedback="create_form_feedback.name.message" :validation-status="create_form_feedback.name.status" >
+    <n-form-item :feedback="create_form_feedback.name.message" :validation-status="create_form_feedback.name.status">
       <n-input placeholder="小组名称" v-model:value="create_form.name" minlength="3" maxlength="10"></n-input>
     </n-form-item>
     <template #action>
@@ -76,14 +79,15 @@
       </n-space>
     </template>
   </n-modal>
-  <n-card :title="t(strings.managed)" style="margin-top: 20px;">
+  <n-card :title="t(strings.managed)" style="margin-top: 20px;" v-if="session.permission > 1">
     <template #header-extra>
       <n-button secondary type="primary" @click="show_create_group=true">
-          {{t(strings.create)}}
+        {{ t(strings.create) }}
       </n-button>
     </template>
-<!--    管理的小组-->
-    <n-alert type="warning" v-if="managed_groups.length===0" :title="t(strings.no_group.title)" class="clickable" @click="show_create_group=true">
+    <!--    管理的小组-->
+    <n-alert type="warning" v-if="managed_groups.length===0" :title="t(strings.no_group.title)" class="clickable"
+             @click="show_create_group=true">
       <template #icon>
         <n-icon>
           <EditOffOutlined/>
@@ -135,6 +139,7 @@ const invitation_feedback = reactive({
   message: '',
 });
 const message = useMessage();
+
 async function check_invitation() {
   if (invitation_code.value.length === 0) {
     invitation_feedback.status = 'error';
@@ -180,7 +185,7 @@ const managed_groups = ref([]);
 
 onMounted(async () => {
   if (session.value.permission > 1) {
-  //  对于管理员+小组长：检查自己管理的小组
+    //  对于管理员+小组长：检查自己管理的小组
     log_api("调查小组", "Client => Server", "获取自己管理的小组");
     try {
       let result = (await groups.get_manageable_groups());
@@ -192,7 +197,6 @@ onMounted(async () => {
 
   }
 })
-
 
 
 // 创建小组部分
@@ -223,6 +227,7 @@ function create_point() {
 
 
 const notification = useNotification();
+
 async function create_and_join_group() {
   if (create_form.name.length < 3) {
     create_form_feedback.name.status = 'error';
@@ -266,14 +271,16 @@ async function create_and_join_group() {
 </script>
 
 <style scoped>
-  .clickable {
-    cursor: pointer !important;
-    transition: all .2s ease-in-out;
-  }
-  .clickable:hover {
-    filter: brightness(0.9);
-  }
-  .clickable:active {
-    filter: brightness(0.8);
-  }
+.clickable {
+  cursor: pointer !important;
+  transition: all .2s ease-in-out;
+}
+
+.clickable:hover {
+  filter: brightness(0.9);
+}
+
+.clickable:active {
+  filter: brightness(0.8);
+}
 </style>

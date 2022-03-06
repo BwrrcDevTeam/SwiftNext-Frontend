@@ -16,21 +16,21 @@
     <n-grid-item style="padding: 10px;">
       <n-h3>必填项</n-h3>
       <n-form-item required label="调查点">
-        <n-select filterable :options="group_all_points" v-model:value="selected_point" style="max-width: 200px;"></n-select>
+        <n-select filterable :options="group_all_points" v-model:value="selected_point" style="width: 100%;"></n-select>
       </n-form-item>
       <n-form-item required label="数量">
-        <n-input-number min="0" v-model:value="data.num" max="114514" style="max-width: 200px;">
+        <n-input-number min="0" v-model:value="data.num" max="114514" style="width: 100%;">
 
         </n-input-number>
       </n-form-item>
       <n-form-item required label="时间">
-        <n-date-picker v-model:value="data.time" style="max-width: 200px;" type="datetime"></n-date-picker>
+        <n-date-picker v-model:value="data.time" style="width: 100%;" type="datetime"></n-date-picker>
       </n-form-item>
     </n-grid-item>
     <n-grid-item style="padding: 10px;">
       <n-h3>选填项</n-h3>
       <n-form-item label="协作者">
-        <n-select :options="all_users" multiple v-model:value="collaborators" filterable size="large">
+        <n-select :options="all_users" multiple v-model:value="collaborators" filterable size="large" style="width: 100%">
 
         </n-select>
       </n-form-item>
@@ -40,14 +40,14 @@
 <!--      </n-form-item>-->
 
       <n-form-item label="备注">
-        <n-input type="textarea" :autosize="{minRows: 3, maxRows: 7}" maxlength="114514" show-count v-model:value="data.description">
+        <n-input type="textarea" :autosize="{minRows: 3, maxRows: 7}" maxlength="114514" show-count v-model:value="data.description" style="width: 100%">
         </n-input>
       </n-form-item>
-      <n-form-item label="附件">
-        <n-upload v-model:file-list="attachments_list" :action="storage.get_upload_url()" @before-upload="check_attachment" :on-remove="delete_attachment" :custom-request="upload_file">
-          <n-button>上传文件</n-button>
-        </n-upload>
-      </n-form-item>
+<!--      <n-form-item label="附件">-->
+<!--        <n-upload v-model:file-list="attachments_list" :action="storage.get_upload_url()" @before-upload="check_attachment" :on-remove="delete_attachment" :custom-request="upload_file">-->
+<!--          <n-button>上传文件</n-button>-->
+<!--        </n-upload>-->
+<!--      </n-form-item>-->
     </n-grid-item>
   </n-grid>
   <n-space justify="space-around">

@@ -41,6 +41,14 @@ const routes = [
                 meta: {
                     perm: 3,
                 }
+            },
+            {
+                path: "/user",
+                name: "home_user",
+                component: () => import("./pages/User.vue"), // 用户页
+                meta: {
+                    perm: 1,
+                }
             }
             // 目前就想到这些
         ]
@@ -110,6 +118,11 @@ const routes = [
         meta: {
             no_auth: true // 暂时不需要登录
         }
+    },
+    {
+        path: "/user/:id",
+        name: "user",
+        component: () => import("./pages/User.vue"),
     },
     // 走错了
     {

@@ -35,6 +35,9 @@ import SiteConfig from "./SiteConfig.vue";
     padding: 40px;
     max-width: 100vw;
   }
+  .side_show .main {
+    width: 100vw;
+  }
   a {
     text-decoration: none;
     filter: brightness(1);
