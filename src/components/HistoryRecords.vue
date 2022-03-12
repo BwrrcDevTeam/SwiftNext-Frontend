@@ -1,11 +1,14 @@
 <template>
-  <n-modal v-model:show="deleting" preset="dialog" title="确认删除" content="系统不会保留任何数据，操作无法撤销" positive-text="确认" negative-text="取消" @positive-click="confirm_delete">
+  <n-modal v-model:show="deleting" preset="dialog" title="确认删除" content="系统不会保留任何数据，操作无法撤销" positive-text="确认"
+           negative-text="取消" @positive-click="confirm_delete">
   </n-modal>
-  <div style="display: flex;justify-content: center;width: 100%; height: 200px;align-content: center;flex-direction: column" v-if="my_records.length === 0 && engaged.length===0">
+  <div
+      style="display: flex;justify-content: center;width: 100%; height: 200px;align-content: center;flex-direction: column"
+      v-if="my_records.length === 0 && engaged.length===0">
     <n-empty size="huge" style="height: fit-content;">
     </n-empty>
   </div>
-  <n-card title="我创建的填报"  v-if="my_records.length > 0">
+  <n-card title="我创建的填报" v-if="my_records.length > 0">
     <n-data-table :columns="columns" :data="my_records" style="width: 100%;">
     </n-data-table>
   </n-card>
@@ -20,12 +23,13 @@
 <script setup>
 import {h, inject, onMounted, ref} from "vue";
 import {client, records} from "../apis"
-import {NDataTable, NEmpty, NCard, NButton, NModal} from "naive-ui";
+import {NDataTable, NEmpty, NCard, NButton, NModal, useMessage} from "naive-ui";
 import {time_to_db, time_from_db} from "../utils";
 
 
 const my_records = ref([]);
 const engaged = ref([]);
+const t = inject("translate");
 
 const session = inject("session");
 
@@ -51,17 +55,24 @@ async function get_project_names() {
 }
 
 async function get_position_name(position_id) {
-  let position = (await client.get("/positions/"+position_id)).data;
+  let position = (await client.get("/positions/" + position_id)).data;
   return position.name;
 }
 
+const message = useMessage();
+
+
 onMounted(async () => {
   await get_project_names();
+  try {
+    let data = (await client.get("/records/user/" + session.value.user.id)).data;
+    my_records.value = await format_records(data.records);
+    console.log(await format_records(data.records));
+    engaged.value = await format_records(data.engaged_records);
+  } catch (e) {
+    message.error(t({cn: "加载历史填报失败: ", en: "Fail to load history records: "}) + t(e.response.data.message))
+  }
 
-  let data = (await client.get("/records/user/" + session.value.user.uid)).data;
-  my_records.value = await format_records(data.records);
-  console.log(await format_records(data.records));
-  engaged.value = await format_records(data.engaged_records);
 });
 
 const columns = [
@@ -86,31 +97,31 @@ const columns = [
     key: "actions",
     render(row) {
       return [
-          h(
-              NButton,
-              {
-                size: "small",
-                type: "primary",
+        h(
+            NButton,
+            {
+              size: "small",
+              type: "primary",
 
-              },
-              {
-                default: "编辑",
+            },
+            {
+              default: "编辑",
+            }
+        ),
+        h(
+            NButton,
+            {
+              size: "small",
+              type: "error",
+              style: "margin-left: 10px",
+              onClick: () => {
+                deleting.value = row.id;
               }
-          ),
-          h(
-              NButton,
-              {
-                size: "small",
-                type: "error",
-                style: "margin-left: 10px",
-                onClick: () => {
-                  deleting.value = row.id;
-                }
-              },
-              {
-                default: "删除",
-              }
-          )
+            },
+            {
+              default: "删除",
+            }
+        )
       ]
     }
   }

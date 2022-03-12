@@ -19,14 +19,14 @@
       </n-space>
     </template>
   </n-modal>
-  <n-card :title="t(strings.joined)" v-if="session.permission === 1">
+  <n-card :title="t(strings.joined)">
     <template #header-extra>
       <n-button secondary type="primary" @click="show_join_group=true">
         {{ t(strings.join) }}
       </n-button>
     </template>
     <!--    已加入的小组-->
-    <n-alert type="warning" v-if="!session.user.group" :title="t(strings.no_group.title)" class="clickable"
+    <n-alert type="warning" v-if="!session.user.groups" :title="t(strings.no_group.title)" class="clickable"
              @click="show_join_group=true">
       <template #icon>
         <n-icon>
@@ -35,7 +35,7 @@
       </template>
       {{ t(strings.no_group.description) }}
     </n-alert>
-    <GroupCard v-else :group_id="session.user.group">
+    <GroupCard v-else :group_id="group_id" v-for="group_id in session.user.groups" :brief="true">
 
     </GroupCard>
 
@@ -95,7 +95,7 @@
       </template>
       {{ t(strings.no_manageable.description) }}
     </n-alert>
-    <GroupCard v-else :group_id="group.id" v-for="group in managed_groups" manageable/>
+    <GroupCard v-else :group_id="group.id" v-for="group in managed_groups" :brief="true"/>
 
   </n-card>
 </template>

@@ -112,7 +112,7 @@
     <template #header>
       <n-h1>{{ group.name }}</n-h1>
     </template>
-    <n-list>
+    <n-list v-if="!props.brief">
       <template #header>
         <n-space justify="space-between">
           <n-h2 style="margin-bottom: 0;margin-left: 19px;">调查点</n-h2>
@@ -139,7 +139,7 @@
         还没有调查点
       </n-empty>
     </n-list>
-    <n-list>
+    <n-list v-if="!props.brief">
       <template #header>
         <n-space justify="space-between">
           <div style="display: flex;width: fit-content;">

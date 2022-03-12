@@ -153,8 +153,8 @@ onMounted(async () => {
   } catch (e) {
 
   }
-  log_api("通知", "Client => Server", "获取用户通知");
-  notifications.value = (await notify_api.get_notifications()).data;
+  // log_api("通知", "Client => Server", "获取用户通知");
+  // notifications.value = (await notify_api.get_notifications()).data;
   log_api("通知", "Server => Client", "查询到 " + notifications.value.length + " 条通知");
   log_api("项目", "Client => Server", "获取全站项目");
   projects.value = (await projects_api.get_all_projects()).data;
