@@ -4,7 +4,8 @@
     <n-grid-item>
       <n-card :title="t(strings.week_overview)" class="index_card">
         <!--        本周已进行 n 次调查 / 本周尚未进行任何调查填报-->
-        <n-alert type="info" v-if="week_reports.length===0" :title="t(strings.no_reports_this_week.title)" @click="router.push({'name': 'home_reports'})" class="clickable">
+        <n-alert type="info" v-if="week_reports.length===0" :title="t(strings.no_reports_this_week.title)"
+                 @click="router.push({'name': 'home_reports'})" class="clickable">
           <template #icon>
             <n-icon>
               <ContentPasteOffOutlined/>
@@ -15,7 +16,7 @@
       </n-card>
     </n-grid-item>
     <n-grid-item>
-<!--      项目信息-->
+      <!--      项目信息-->
       <n-card :title="t(strings.project_overview)" class="index_card">
         <n-row>
           <n-col :span="12">
@@ -34,9 +35,10 @@
       </n-card>
     </n-grid-item>
     <n-grid-item>
-<!--      调查小组信息-->
+      <!--      调查小组信息-->
       <n-card :title="t(strings.group_overview)" class="index_card">
-        <n-alert type="warning" v-if="!session.user.hasOwnProperty('group')" :title="t(strings.no_group.title)" class="clickable" @click="router.push({name: 'home_group'})">
+        <n-alert type="warning" v-if="groups.length ===0" :title="t(strings.no_group.title)"
+                 class="clickable" @click="router.push({name: 'home_group'})">
           <template #icon>
             <n-icon>
               <GroupOffOutlined/>
@@ -44,31 +46,34 @@
           </template>
           {{ t(strings.no_group.description) }}
         </n-alert>
-        <template v-else-if="group">
-          <n-h2>{{ group.name }}</n-h2>
-          <n-row>
-            <n-col :span="12">
-              <n-statistic label="小组已经运行了">
-                <n-number-animation :from="0" :to="get_group_running_time()"/>
-                <template #suffix>
-                  天
-                </template>
-              </n-statistic>
-            </n-col>
-            <n-col :span="12">
-              <n-statistic label="小组填报数量">
-                <n-number-animation :from="0" :to="group_reports"/>
+        <template v-else-if="groups.length > 0">
+          <div v-for="group in groups" :key="group.id">
+            <n-h2>{{ group.name }}</n-h2>
+            <n-row>
+              <n-col :span="12">
+                <n-statistic label="小组已经运行了">
+                  <n-number-animation :from="0" :to="group.running_days"/>
+                  <template #suffix>
+                    天
+                  </template>
+                </n-statistic>
+              </n-col>
+              <n-col :span="12">
+                <n-statistic label="小组填报数量">
+                  <n-number-animation :from="0" :to="group.reports"/>
 
-              </n-statistic>
-            </n-col>
-          </n-row>
+                </n-statistic>
+              </n-col>
+            </n-row>
+          </div>
+
 
         </template>
-<!--        <GroupCard v-else :group_id="session.user.groups[0]" brief/>-->
+        <!--        <GroupCard v-else :group_id="session.user.groups[0]" brief/>-->
       </n-card>
     </n-grid-item>
     <n-grid-item>
-<!--      通知-->
+      <!--      通知-->
       <n-card :title="t(strings.notifications)" class="index_card">
         <n-alert type="default" v-if="notifications.length===0" :show-icon="false">
 
@@ -81,7 +86,19 @@
 </template>
 
 <script setup>
-import {NGrid, NGridItem, NCard, useNotification, NAlert, NStatistic, NRow, NCol, NNumberAnimation, NIcon, NH2} from 'naive-ui';
+import {
+  NGrid,
+  NGridItem,
+  NCard,
+  useNotification,
+  NAlert,
+  NStatistic,
+  NRow,
+  NCol,
+  NNumberAnimation,
+  NIcon,
+  NH2
+} from 'naive-ui';
 import strings from "../../strings/Home/IndexReport.json";
 import {inject, onMounted, ref} from "vue";
 import {
@@ -91,7 +108,7 @@ import {
   log_api,
   log_error,
   update_session,
-    client
+  client
 } from "../../apis"
 
 import GroupOffOutlined from "@vicons/material/GroupOffOutlined";
@@ -112,8 +129,14 @@ const notifications = ref([]);
 const projects = ref([]);
 const project_reports = ref(0); // 项目填报数量
 
-const group = ref(null);
-const group_reports = ref(0); // 小组填报数量
+
+const groups = ref([]); // 用户所在的小组的信息
+// {
+//   name: xx,
+//   id: xx,
+//   reports: n,
+//   running_days: n
+// }
 
 onMounted(async () => {
   log_api("会话", "Client => Server", "更新会话");
@@ -146,24 +169,30 @@ onMounted(async () => {
 
   }
 
-  log_api("填报", "Client => Server", "获取小组填报数量");
-  try {
-    group_reports.value = (await records.get_group_count(session.value.group)).data;
-    log_api("填报", "Server => Client", "查询到 " + group_reports.value + " 条填报");
-  } catch (e) {
+  log_api("填报", "Client => Server", "获取用户所所在小组的信息");
 
-  }
-
-
-  if (session.value.user.hasOwnProperty('group')) {
-    log_api("小组", "Client => Server", "获取用户所在的小组");
-    group.value = (await client.get("/groups/" + session.value.user.group)).data;
-    log_api("小组", "Server => Client", "查询到 " + group.value.name);
+  if (session.value.user.hasOwnProperty('groups')) {
+    for (const group_id of session.value.user.groups) {
+      try {
+        log_api("小组", "Client => Server", "获取用户所在的小组");
+        let resp = (await client.get("/groups/" + group_id)).data;
+        let group = {
+          name: resp.name,
+          id: resp.id,
+        }
+        resp = (await client.get("/records/by_group/" + group_id)).data;
+        group.reports = resp.length;
+        groups.value.push(group);
+      } catch (e) {
+        log_error("Client => Server", "无法查询小组信息" + e);
+      }
+    }
+    log_api("小组", "Server => Client", "查询了 " + groups.value.length + " 个小组");
   }
 
 })
 
-function get_group_running_time() {
+function get_group_running_time(group_id) {
   if (group.value === null) {
     return 0;
   }
@@ -175,17 +204,20 @@ function get_group_running_time() {
 </script>
 
 <style scoped>
-  .clickable {
-    cursor: pointer !important;
-    transition: all .2s ease-in-out;
-  }
-  .clickable:hover {
-    filter: brightness(0.9);
-  }
-  .clickable:active {
-    filter: brightness(0.8);
-  }
-  .index_card {
-    height: 100%;
-  }
+.clickable {
+  cursor: pointer !important;
+  transition: all .2s ease-in-out;
+}
+
+.clickable:hover {
+  filter: brightness(0.9);
+}
+
+.clickable:active {
+  filter: brightness(0.8);
+}
+
+.index_card {
+  height: 100%;
+}
 </style>

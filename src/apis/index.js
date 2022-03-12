@@ -10,9 +10,8 @@ import storage from "./storage"
 
 const config = {
     // baseURL: "https://console.bwrrc.org.cn/api/",
-    baseURL: "http://192.168.1.50:8000/api/", // 调试时使用
+    baseURL: "http://192.168.1.50:8000/", // 调试时使用
     timeout: 10000,
-    // socket: "wss://console.bwrrc.org.cn/api/",
 }
 
 const client = axios.create(config)
@@ -50,15 +49,12 @@ async function update_session() {
     let resp = await init_session();
     log_api("服务器回应!", "Server => Client", resp.data.message);
     let perm_map = {
-      0: "访客",
-      1: "志愿者",
-      2: "组长",
-      3: "管理员"
+        0: "访客", 1: "志愿者", 2: "组长", 3: "管理员"
     }
     console.log("用户的权限:\t", perm_map[resp.data.session.permission])
-    console.log("创建了新的会话?\t", resp.data.session_need_update);
+    // console.log("创建了新的会话?\t", resp.data.session_need_update);
     console.log("是否登陆?\t", resp.data.session.login);
-    sessionStorage.setItem("session",JSON.stringify(resp.data.session));
+    sessionStorage.setItem("session", JSON.stringify(resp.data.session));
     return resp.data.session;
 }
 

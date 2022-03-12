@@ -1,17 +1,9 @@
 <template>
-  <SelectPoint :points="group_all_points" style="width: 100%; height: 300px;" v-model:selected="selected_point"></SelectPoint>
+  <SelectPoint :points="group_all_points" style="width: 100%; height: 300px;"
+               v-model:selected="selected_point"></SelectPoint>
   <div style="height: 30px;"></div>
-  <n-modal preset="card"
-           :show="preview_task_id !== undefined"
-           @close="preview_task_id = undefined"
-           style="max-width: 100vw; width:fit-content; height: fit-content;"
-           title="检测结果"
-           :mask-closable="false"
-  >
-<!--    展示检测结果的模态框-->
-    <Detection :thresh="thresh" editable :detection="preview_task_id ? preview_task_id : ''" style="height:80vh; max-height: 90vh; max-width: 90vw;width: 80vw;"/>
 
-  </n-modal>
+
   <n-grid cols="1 800:2">
     <n-grid-item style="padding: 10px;">
       <n-h3>必填项</n-h3>
@@ -30,24 +22,21 @@
     <n-grid-item style="padding: 10px;">
       <n-h3>选填项</n-h3>
       <n-form-item label="协作者">
-        <n-select :options="all_users" multiple v-model:value="collaborators" filterable size="large" style="width: 100%">
+        <n-select :options="all_users" multiple v-model:value="collaborators" filterable size="large"
+                  style="width: 100%">
 
         </n-select>
       </n-form-item>
-<!--      <n-form-item label="朝向">-->
-<!--        <Compass v-model:orientation="data.orientation" style="width: 300px; height: 300px;margin:auto;"></Compass>-->
-<!--        <n-button @click="data.orientation = undefined">清空</n-button>-->
-<!--      </n-form-item>-->
-
       <n-form-item label="备注">
-        <n-input type="textarea" :autosize="{minRows: 3, maxRows: 7}" maxlength="114514" show-count v-model:value="data.description" style="width: 100%">
+        <n-input type="textarea" :autosize="{minRows: 3, maxRows: 7}" maxlength="114514" show-count
+                 v-model:value="data.description" style="width: 100%">
         </n-input>
       </n-form-item>
-<!--      <n-form-item label="附件">-->
-<!--        <n-upload v-model:file-list="attachments_list" :action="storage.get_upload_url()" @before-upload="check_attachment" :on-remove="delete_attachment" :custom-request="upload_file">-->
-<!--          <n-button>上传文件</n-button>-->
-<!--        </n-upload>-->
-<!--      </n-form-item>-->
+      <!--      <n-form-item label="附件">-->
+      <!--        <n-upload v-model:file-list="attachments_list" :action="storage.get_upload_url()" @before-upload="check_attachment" :on-remove="delete_attachment" :custom-request="upload_file">-->
+      <!--          <n-button>上传文件</n-button>-->
+      <!--        </n-upload>-->
+      <!--      </n-form-item>-->
     </n-grid-item>
   </n-grid>
   <n-space justify="space-around">
@@ -89,16 +78,10 @@ import SparkMD5 from "spark-md5";
 import {time_from_db, time_to_db} from "../../utils";
 
 
-
 const t = inject("translate");
 
 const session = inject("session");
 const handle_crucial_error = inject("handle_crucial_error");
-
-// 调试时
-// const detect_list = ref(props.default_detect_list);
-const detect_list = ref([
-]);
 
 
 // 填报数据
@@ -109,7 +92,6 @@ const data = ref({
   num: undefined, // 数量
   time: undefined, // 时间戳
 //  可选字段
-  orientation: undefined, // 朝向
   description: "", // 备注
 })
 
@@ -173,7 +155,7 @@ onMounted(async () => {
       return;
     }
   } catch (e) {
-  //  这个错误我接不了(
+    //  这个错误我接不了(
     handle_crucial_error(e);
   }
 //  2. 询问有无草稿
@@ -189,12 +171,6 @@ onMounted(async () => {
     }
 
     data.value = draft;
-    if (draft.detect_list) {
-      detect_list.value += draft.detect_list;
-    }
-    if (draft.detection_results) {
-      detection_results.value += draft.detection_results;
-    }
 
     console.log(draft)
     log_api("草稿", "Server => Client", "已加载草稿内容");
@@ -204,7 +180,11 @@ onMounted(async () => {
   }
 //  3. 查询小组的全部调查点
   try {
-    log_api("小组调查点", "Client => Server", "询问小组调查点");
+    let groups = session.value.user.groups;
+
+    log_api("小组调查点", "Client => Server", "询问小组调查点 小组数量: " + groups.length);
+
+
     let points = (await client.get("/positions/by_group/" + session.value.user.group)).data;
     points.forEach(point => {
       group_all_points.value.push({
@@ -236,182 +216,15 @@ onMounted(async () => {
       }
 
     })
-    log_api("用户", "Server => Client", "已加载 "+all_users.value.length + " 个用户")
+    log_api("用户", "Server => Client", "已加载 " + all_users.value.length + " 个用户")
   } catch (e) {
 
   }
 })
-
-const compute_method = ref('max')
-const thresh = ref(0.3);
-
-// 目标检测相关内容
-// 这个map是fid 对 task_id 和 result 的
-const detection_results = ref({
-  "61ff72448dda2b94c2fbd093": {
-    task_id: "61ff72488dda2b94c2fbd099"
-  }
-})
-const preview_task_id = ref(undefined);
-function handle_detection_preview(file) {
-  console.log("预览文件ID:", file.fid)
-  if (detection_results.value.hasOwnProperty(file.fid)) {
-    preview_task_id.value = detection_results.value[file.fid].task_id;
-  } else {
-    message.warning("现在还不能查看检测结果")
-  }
-}
-
-async function compute_number() {
-//  计算全部的数量
-  try {
-    let tasks = [];
-    for (const file in detection_results.value) {
-      tasks.push(detection_results.value[file].task_id)
-    }
-    let result = await client.post("/detector/compute", {
-      tasks,
-      method: compute_method.value,
-      threshold: thresh.value
-    })
-    message.success("数量计算完毕!");
-    data.value.num = result.data;
-  } catch (e) {
-    message.error("计算数量失败!")
-  }
-
-}
-
-async function delete_detection({file, file_list}) {
-  await delete_attachment({file, file_list});
-  if (detection_results.value.hasOwnProperty(file.fid)) {
-    delete detection_results.value[file.fid]
-  }
-  message.success("检测记录删除成功!")
-}
-
-function new_detection(fid) {
-  let n_ref = ref(null);
-  n_ref.value = notification.create({
-    title: "识别任务状态",
-    content: "排队中..."
-  })
-  let ws = new WebSocket(config.socket + "detector/task/ws");
-  let heartbeat = undefined;
-  ws.onopen = () => {
-  //  双工连接打开后，发送检测请求
-    ws.send(JSON.stringify({
-      attachment: fid
-    }))
-    n_ref.value.content = "请求已发送"
-    heartbeat = setInterval(() => {
-      ws.send(JSON.stringify({
-        pong: "Hello!!"
-      }))
-    }, 1000)
-  }
-  ws.onclose = () => {
-    console.log("WebSocket连接断开!")
-    clearInterval(heartbeat);
-  }
-
-  ws.onmessage = (event) => {
-    let data = JSON.parse(event.data);
-    switch (data.status) {
-      case "processing":
-        if (data.current && data.total) {
-          let percentage = Math.ceil((data.current / data.total) * 100);
-          console.log("更新进度", percentage)
-          n_ref.value.content = () => h(
-              NProgress,
-              {
-                percentage,
-                processing: true
-              }
-          )
-        } else {
-          n_ref.value.content = () => h(
-              NProgress,
-              {
-                percentage: 0,
-                processing: true
-              }
-          )
-        }
-        break;
-      case "finished":
-        n_ref.value.destroy();
-        notification.success({
-          title: "识别任务状态",
-          content: "任务已完成!",
-          duration: 3000
-        })
-        detection_results.value[fid] = {
-          task_id: data.task_id,
-          // result: data.result
-        };
-        console.log("任务完成")
-        break;
-    }
-  }
-}
-
-function commit_new_detection({file, event}) {
-  let response = JSON.parse(event.target.response)
-  let fid = response.id
-  file.fid = fid
-  file.url = storage.get_thumbs_url(fid, 100, 100)
-  // 延迟触发 防止卡顿
-  setTimeout(() => new_detection(fid), 100)
-}
-
-function upload_file({file, data, headers, action, onFinish, onError, onProgress}) {
-  const form_data = new FormData();
-  const reader = new FileReader();
-
-  reader.readAsBinaryString(file.file);
-  reader.onload = async e => {
-    const md5 = SparkMD5.hashBinary(e.target.result);
-    try {
-      let result = await client.post("/storage/link", {
-        md5,
-        name: file.name
-      })
-      file.url = storage.get_download_url(result.data.id)
-      file.fid = result.data.id
-      onFinish(result.data)
-    } catch (e) {
-      if (e.response && e.response.data.code===1001) {
-        form_data.append("file", file.file);
-        // form_data.append(file.name, file.file);
-        try {
-          let result = await client.post("/storage", form_data, {
-            onUploadProgress: ({loaded, total}) => {
-              onProgress({ percent: Math.ceil((loaded / total) * 100) })
-            }
-          });
-          file.url = storage.get_download_url(result.data.id)
-          file.fid = result.data.id
-          onFinish(result.data)
-
-        } catch (e) {
-          if (e.response) {
-            message.error(t(e.response.data.message))
-          }
-          onError(e)
-        }
-      } else {
-        console.error(e)
-      }
-
-    }
-  }
-
-}
-
 
 
 const message = useMessage();
+
 // 校验表单
 function evaluate(show_error = false) {
   // 计算出表单，并加以验证
@@ -508,7 +321,8 @@ async function submit() {
       description: "调查报告已提交!",
       duration: 3000
     })
-    update_draft = () => {};
+    update_draft = () => {
+    };
     await delete_draft();
     await router.push({name: "home_reports"});
   } catch (e) {
@@ -520,9 +334,9 @@ async function submit() {
 
 watch(() => {
   return data.value
-}, () =>{
+}, () => {
   have_update = true
-}, { deep: true })
+}, {deep: true})
 
 watch(selected_point, () => {
   have_update = true
