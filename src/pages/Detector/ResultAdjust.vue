@@ -11,7 +11,7 @@
       <n-input-number v-model:value="threshold" :min="0.05" :max="1" :step="0.05"></n-input-number>
     </n-form-item>
     <n-statistic label="数量">
-      {{ task ? task.result.length : 0 }}
+      {{ count }}
     </n-statistic>
     <template #action>
       <n-button type="primary" @click="save">
@@ -27,7 +27,7 @@
 import {NButton, NCard, NFormItem, NImage, NInputNumber, NSlider, NSpin, NStatistic, useMessage} from 'naive-ui';
 
 import {onMounted, onUnmounted, ref, watch} from "vue";
-import {client, storage} from "../../apis";
+import {client, log_api, storage} from "../../apis";
 
 const props = defineProps(['task_id']);
 
@@ -39,7 +39,13 @@ const count = ref(undefined);
 const threshold = ref(undefined);
 
 async function load_result() {
-  count.value = (await client.get("/detector/" + props.task_id + "/count")).data;
+  try {
+    let result = (await client.get("/detector/" + props.task_id + "/count?threshold=" + threshold.value)).data;
+    count.value = result;
+  } catch (e) {
+
+  }
+
 }
 
 async function load_threshold() {
