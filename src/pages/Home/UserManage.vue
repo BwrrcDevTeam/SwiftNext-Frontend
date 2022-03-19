@@ -1,7 +1,7 @@
 <template>
   <!--  用户管理组件-->
   <!--  创建邀请card-->
-  <n-modal v-model:show="new_invitation" preset="card">
+  <n-modal v-model:show="new_invitation" preset="card" style="max-width: 600px">
 
   </n-modal>
   <!--  创建用户card-->

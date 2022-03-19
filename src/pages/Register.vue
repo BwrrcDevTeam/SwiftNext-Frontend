@@ -21,17 +21,19 @@
         <n-card title="邀请信息">
           <n-text depth="2">
             小组：
-            <n-text depth="1" type="info">{{ invitation_info.group_name }}</n-text>
+            <n-text depth="1" type="info">
+              {{invitation_info.groups}}
+            </n-text>
           </n-text>
           <br>
           <n-text depth="2">
             过期时间：
-            <n-text depth="1" type="info">{{ invitation_info.expire_time }}</n-text>
+            <n-text depth="1" type="info">{{ invitation_info.expire_time.toLocaleString() }}</n-text>
           </n-text>
           <br>
           <n-text depth="2">
             用户角色：
-            <n-text depth="1" type="info">{{ invitation_info.role_name }}</n-text>
+            <n-text depth="1" type="info">{{ invitation_info.role }}</n-text>
           </n-text>
           <template #footer>
             <div style="display: flex;justify-content: space-between">
@@ -83,9 +85,9 @@
       </n-collapse-transition>
 
 
-<!--      <template #footer v-if="stage === 'input_code'">-->
-<!--        <n-text depth="3" @click="router.push({name: 'declaration'})" class="how_code">这是什么？如何获得注册邀请码？</n-text>-->
-<!--      </template>-->
+      <!--      <template #footer v-if="stage === 'input_code'">-->
+      <!--        <n-text depth="3" @click="router.push({name: 'declaration'})" class="how_code">这是什么？如何获得注册邀请码？</n-text>-->
+      <!--      </template>-->
     </n-card>
   </div>
 </template>
@@ -98,6 +100,7 @@ import {useRouter} from "vue-router";
 import {client, log_api, encrypt} from "../apis";
 
 import {get_lang} from "../i18n";
+import {time_from_db} from "../utils";
 
 const t = inject("translate");
 const router = useRouter();
@@ -123,10 +126,23 @@ function utc_stamp_to_local(utc_stamp) {
 
 async function update_invitation_info(data) {
   invitation_info.value = data;
-  let group = await client.get("/groups/" + data.group_id);
-  invitation_info.value.group_name = group.data.name;
-  invitation_info.value.role_name = data.permission === 1 ? "志愿者" : "组长";
-  invitation_info.value.expire_time = utc_stamp_to_local(data.expire_at)
+  let groups = "";
+  for (const group_id of data.groups) {
+    let group = (await client.get("/groups/" + group_id)).data;
+    groups += group.name + " ";
+  }
+
+  invitation_info.value.groups = groups;
+  if (data.permission === 3) {
+    invitation_info.value.role = "管理员";
+  }
+  if (data.permission === 2) {
+    invitation_info.value.role = "组长";
+  }
+  if (data.permission === 1) {
+    invitation_info.value.role = "志愿者";
+  }
+  invitation_info.value.expire_time = time_from_db(data.expire_at)
 }
 
 function re_input() {

@@ -13,7 +13,7 @@
         <DarkModeOutlined v-else @click="theme='dark'"/>
       </transition>
     </n-icon>
-    <div class="logo" @click="router.push({'name': 'home_index'})">SwiftNext</div>
+    <img src="../assets/logo.png" class="logo" @click="router.push({'name': 'home_index'})"/>
     <n-menu class="menu" :options="menu_options" :value="menu_value"/>
     <div class="config">
       <SiteConfig/>
@@ -225,7 +225,7 @@ const side_menu_show = inject("side_menu_show");
   line-height: 70px;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   display: flex;
-  width: 100px;
+  width: 130px;
   grid-area: 1 / 1 / 2 / 2;
   transition: all .2s cubic-bezier(.4, 0, .2, 1);
   user-select: none;

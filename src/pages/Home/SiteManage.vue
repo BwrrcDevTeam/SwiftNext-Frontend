@@ -2,17 +2,23 @@
   <n-grid cols="1 400:1 600:2 800:3 4" :y-gap="10" :x-gap="10">
     <n-grid-item>
       <n-card title="项目管理" class="module">
-        <ProjectsManage/>
+        <n-scrollbar style="max-height: 500px">
+          <ProjectsManage/>
+        </n-scrollbar>
       </n-card>
     </n-grid-item>
     <n-grid-item>
       <n-card title="用户管理" class="module">
-        <UserManage/>
+        <n-scrollbar style="max-height: 500px">
+          <UserManage/>
+        </n-scrollbar>
       </n-card>
     </n-grid-item>
     <n-grid-item>
       <n-card title="小组管理" class="module">
-        <GroupManage/>
+        <n-scrollbar style="max-height: 500px">
+          <GroupManage/>
+        </n-scrollbar>
       </n-card>
     </n-grid-item>
     <n-grid-item>
@@ -49,7 +55,7 @@
 </template>
 
 <script setup>
-import { NCard, NGrid, NGridItem, NButton, NStatistic, NRow, NCol, NDatePicker } from 'naive-ui';
+import { NCard, NGrid, NGridItem, NButton, NStatistic, NRow, NCol, NDatePicker, NScrollbar } from 'naive-ui';
 import {ref} from "vue";
 import UserManage from "./UserManage.vue";
 import GroupManage from "./GroupManage.vue";
