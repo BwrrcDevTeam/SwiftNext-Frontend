@@ -9,8 +9,8 @@ import groups from "./groups";
 import storage from "./storage"
 
 const config = {
-    // baseURL: "https://console.bwrrc.org.cn/api/",
-    baseURL: "http://192.168.1.50:8000/", // 调试时使用
+    baseURL: "https://console.bwrrc.org.cn/api/",
+    // baseURL: "http://192.168.1.50:8000/", // 调试时使用
     timeout: 10000,
 }
 
