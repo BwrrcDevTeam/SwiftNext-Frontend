@@ -308,7 +308,7 @@ async function cover_upload_error({file, event}) {
 
 async function delete_cover() {
   group.value = (await client.patch("/groups/" + props.group_id, {
-    cover: null,
+    cover: "",
   })).data
 }
 

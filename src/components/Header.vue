@@ -228,6 +228,7 @@ const side_menu_show = inject("side_menu_show");
   width: 130px;
   grid-area: 1 / 1 / 2 / 2;
   transition: all .2s cubic-bezier(.4, 0, .2, 1);
+  object-fit: contain;
   user-select: none;
 }
 
