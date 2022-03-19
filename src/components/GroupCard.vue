@@ -159,7 +159,8 @@
         <UserLine v-for="user in members" :uid="user.id"
                   style="margin-left: 20px;margin-top: 5px;margin-bottom: 5px;"></UserLine>
       </n-list>
-      <n-card v-if="members.reduce((last, user) => {return last || user.id===session.user.id}) && (!props.brief)" :bordered="false">
+      <n-card v-if="members.reduce((last, user) => {return last || user.id===session.user.id}) && (!props.brief)"
+              :bordered="false">
         <template #header>
           <n-divider></n-divider>
           <n-h2>重要操作</n-h2>
@@ -394,22 +395,27 @@ function copy_invitation_code() {
 }
 
 async function create_invitation() {
-  if (invitation_type.value === "register") {
-    let result = await client.post("/users/register_invitations", {
-      expire_at: days_to_utc_stamp(invitation_valid_time.value),
-      group_id: props.group_id,
-      permission: new_user_permission.value,
-    })
-    console.log(result.data.code)
-    invitation_code.value = result.data.code;
-  } else {
-    let result = await client.post("/groups/invitation", {
-      expire_at: days_to_utc_stamp(invitation_valid_time.value),
-      group_id: props.group_id,
-      permission: new_user_permission.value,
-    })
-    invitation_code.value = result.data.code
+  try {
+    if (invitation_type.value === "register") {
+      let result = await client.post("/users/register_invitations", {
+        expire_at: days_to_utc_stamp(invitation_valid_time.value),
+        groups: [props.group_id],
+        permission: new_user_permission.value,
+      })
+      console.log(result.data.code)
+      invitation_code.value = result.data.code;
+    } else {
+      let result = await client.post("/groups/invitation", {
+        expire_at: days_to_utc_stamp(invitation_valid_time.value),
+        groups: [props.group_id],
+        permission: new_user_permission.value,
+      })
+      invitation_code.value = result.data.code
+    }
+  } catch (e) {
+    message.error(t(e.response.data.message))
   }
+
 }
 
 function clean_code() {

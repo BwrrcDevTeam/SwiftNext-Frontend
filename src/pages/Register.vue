@@ -83,9 +83,9 @@
       </n-collapse-transition>
 
 
-      <template #footer v-if="stage === 'input_code'">
-        <n-text depth="3" @click="router.push({name: 'declaration'})" class="how_code">这是什么？如何获得注册邀请码？</n-text>
-      </template>
+<!--      <template #footer v-if="stage === 'input_code'">-->
+<!--        <n-text depth="3" @click="router.push({name: 'declaration'})" class="how_code">这是什么？如何获得注册邀请码？</n-text>-->
+<!--      </template>-->
     </n-card>
   </div>
 </template>
@@ -238,6 +238,7 @@ async function register() {
 .main {
   max-width: 500px;
   margin: 50px auto;
+  /*min-height: 500px;*/
 }
 
 .outer {
