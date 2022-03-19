@@ -89,8 +89,13 @@ const users = ref([])
 
 async function parse_users(data) {
   return await Promise.all(data.map(async user => {
-    if (user.group) {
-      user.group_name = (await client.get("/groups/" + user.group)).data.name
+    if (user.groups) {
+      let group_name = "";
+      for (let group of user.groups) {
+        group_name += (await client.get("/groups/" + group)).data.name + "、"
+      }
+      group_name = group_name.substr(0, group_name.length - 1)
+      user.group_name = group_name
     } else {
       user.group_name = "无"
     }

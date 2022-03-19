@@ -78,10 +78,13 @@ onMounted(async () => {
     if (user.value.hasOwnProperty("group")) {
       user.value.group = (await client.get("/groups/" + user.value.group)).data;
     }
-    console.log(user.value);
     log_api("用户", "Server => Client", "获取到 "+ user.value.name +" 的信息");
     on_loading.value = false;
   } catch (e) {
+    message.error(t({
+      "cn": "获取用户信息失败: ",
+      "en": "Failed to get user information: "
+    }) + t(e.response.data.message));
     log_error("Server => Client", "获取用户信息失败");
   }
 });

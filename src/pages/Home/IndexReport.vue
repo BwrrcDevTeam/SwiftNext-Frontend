@@ -47,7 +47,7 @@
           {{ t(strings.no_group.description) }}
         </n-alert>
         <template v-else-if="groups.length > 0">
-          <div v-for="group in groups" :key="group.id">
+          <div v-for="group in groups" :key="group.id" style="margin-bottom: 30px;">
             <n-h2>{{ group.name }}</n-h2>
             <n-row>
               <n-col :span="12">
@@ -116,6 +116,7 @@ import ContentPasteOffOutlined from "@vicons/material/ContentPasteOffOutlined";
 import {useRouter} from "vue-router";
 
 import GroupCard from "../../components/GroupCard.vue";
+import {time_from_db} from "../../utils";
 
 
 const router = useRouter();
@@ -176,11 +177,14 @@ onMounted(async () => {
       try {
         log_api("小组", "Client => Server", "获取用户所在的小组");
         let resp = (await client.get("/groups/" + group_id)).data;
+        let created_at = time_from_db(resp.created_at);
+        let running_days = (new Date().getTime() - created_at.getTime()) / (1000 * 3600 * 24);
         let group = {
           name: resp.name,
           id: resp.id,
+          running_days,
         }
-        resp = (await client.get("/records/by_group/" + group_id)).data;
+        resp = (await client.get("/records?group=" + group_id)).data;
         group.reports = resp.length;
         groups.value.push(group);
       } catch (e) {

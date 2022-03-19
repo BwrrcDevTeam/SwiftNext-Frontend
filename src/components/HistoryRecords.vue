@@ -65,10 +65,10 @@ const message = useMessage();
 onMounted(async () => {
   await get_project_names();
   try {
-    let data = (await client.get("/records/user/" + session.value.user.id)).data;
-    my_records.value = await format_records(data.records);
-    console.log(await format_records(data.records));
-    engaged.value = await format_records(data.engaged_records);
+    let data = (await client.get("/records?user=" + session.value.user.id)).data;
+    my_records.value = await format_records(data);
+    data = (await client.get("/records?engaged=" + session.value.user.id)).data;
+    engaged.value = await format_records(data);
   } catch (e) {
     message.error(t({cn: "加载历史填报失败: ", en: "Fail to load history records: "}) + t(e.response.data.message))
   }
@@ -141,10 +141,10 @@ async function confirm_delete() {
     deleting.value = false;
     await get_project_names();
 
-    let data = (await client.get("/records/user/" + session.value.user.uid)).data;
-    my_records.value = await format_records(data.records);
-    console.log(await format_records(data.records));
-    engaged.value = await format_records(data.engaged_records);
+    let data = (await client.get("/records?user=" + session.value.user.id)).data;
+    my_records.value = await format_records(data);
+    data = (await client.get("/records?engaged=" + session.value.user.id)).data;
+    engaged.value = await format_records(data);
   }
 }
 </script>

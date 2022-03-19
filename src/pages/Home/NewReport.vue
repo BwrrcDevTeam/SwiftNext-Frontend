@@ -1,5 +1,5 @@
 <template>
-  <SelectPoint :points="group_all_points" style="width: 100%; height: 300px;"
+  <SelectPoint :points="available_points" style="width: 100%; height: 300px;"
                v-model:selected="selected_point"></SelectPoint>
   <div style="height: 30px;"></div>
 
@@ -8,7 +8,7 @@
     <n-grid-item style="padding: 10px;">
       <n-h3>必填项</n-h3>
       <n-form-item required label="调查点">
-        <n-select filterable :options="group_all_points" v-model:value="selected_point" style="width: 100%;"></n-select>
+        <n-tree-select check-strategy="child" filterable :options="points" v-model:value="selected_point" style="width: 100%;"/>
       </n-form-item>
       <n-form-item required label="数量">
         <n-input-number min="0" v-model:value="data.num" max="114514" style="width: 100%;">
@@ -56,12 +56,9 @@ import {
   NGridItem,
   NInput,
   NInputNumber,
-  NModal,
-  NProgress,
+  NTreeSelect,
   NSelect,
-  NSlider,
   NSpace,
-  NUpload,
   useMessage,
   useNotification
 } from 'naive-ui'
@@ -96,9 +93,9 @@ const data = ref({
 })
 
 const selected_point = ref(null);
-const points = ref([])
+const points = ref([]);
+const available_points = ref([]);
 
-const group_all_points = ref([]);
 
 const notification = useNotification();
 const router = useRouter();
@@ -106,7 +103,6 @@ const login = inject("login");
 
 //协作者相关内容
 const all_users = ref([]);
-const temp_user = ref(null);
 const collaborators = ref([]);
 
 // 附件列表
@@ -145,7 +141,7 @@ onMounted(async () => {
       await login();
     }
     // 检查用户有没有调查小组
-    if (!session.value.user.group) {
+    if (!session.value.user.groups || session.value.user.groups.length === 0) {
       notification.error({
         title: "错误",
         content: "您还没有调查小组，请联系小组长获取入组邀请!",
@@ -180,24 +176,39 @@ onMounted(async () => {
   }
 //  3. 查询小组的全部调查点
   try {
-    let groups = session.value.user.groups;
+    log_api("调查点", "Client => Server", "询问调查点");
 
-    log_api("小组调查点", "Client => Server", "询问小组调查点 小组数量: " + groups.length);
-
-
-    let points = (await client.get("/positions/by_group/" + session.value.user.group)).data;
-    points.forEach(point => {
-      group_all_points.value.push({
-        name: point.name,
+    available_points.value = (await client.get("/positions/available")).data;
+    available_points.value = available_points.value.map(point => {
+      return {
+        label: point.name,
+        key: point.id,
+        belongs_to: point.belongs_to,
         longitude: point.longitude,
         latitude: point.latitude,
-        key: point.id,
-        label: point.name,
-        value: point.id,
+        name: point.name,
+        id: point.id
+      }
+    })
+    session.value.user.groups.forEach(group_id => {
+      client.get("/groups/" + group_id).then((resp) => {
+        let children = [];
+        available_points.value.forEach(point => {
+          if (point.belongs_to === group_id) {
+            children.push({
+              label: point.name,
+              key: point.id
+            })
+          }
+        })
+        points.value.push({
+          label: resp.data.name,
+          key: group_id,
+          children
+        })
       })
-    });
-    log_api("小组调查点", "Server => Client", "已加载 " + group_all_points.value.length + " 个调查点");
-    console.log(group_all_points.value);
+    })
+    log_api("调查点", "Server => Client", "已加载 " + available_points.length + " 个调查点");
   } catch (e) {
     log_api("小组调查点", "Server => Client", "无调查点");
   }
@@ -206,12 +217,12 @@ onMounted(async () => {
     log_api("用户", "Client => Server", "获取全部用户")
     let result = (await client.get("/users")).data
     result.forEach(user => {
-      if (user.uid !== session.value.user.uid) {
+      if (user.id !== session.value.user.id) {
         all_users.value.push({
           name: user.name,
-          uid: user.uid,
+          id: user.id,
           label: user.name,
-          value: user.uid
+          value: user.id
         })
       }
 
@@ -229,7 +240,7 @@ const message = useMessage();
 function evaluate(show_error = false) {
   // 计算出表单，并加以验证
   let form = {
-    group_id: session.value.user.group,
+    // group: selected_point.value.belongs_to,
     num: data.value.num,
     position: selected_point.value,
     time: data.value.time
@@ -265,7 +276,7 @@ function evaluate(show_error = false) {
     errored = true;
   }
   form.time = time_to_db(form.time);
-
+  // console.log(form);
   return {form, errored};
 }
 

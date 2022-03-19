@@ -73,6 +73,7 @@ async function polling() {
   }
   try {
     let result = await client.get("/detector/" + task_id.value + "/status");
+    fail_count = 0;
     if (result.data.status === "processing") {
       stage.value = "processing";
       progress.value = parseFloat((result.data.current / result.data.total * 100).toFixed(2));

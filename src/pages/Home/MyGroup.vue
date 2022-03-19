@@ -35,9 +35,13 @@
       </template>
       {{ t(strings.no_group.description) }}
     </n-alert>
-    <GroupCard v-else :group_id="group_id" v-for="group_id in session.user.groups" :brief="true">
+    <n-grid v-else cols="2 400:2 600:3" x-gap="12">
+      <n-grid-item v-for="group_id in session.user.groups" style="height: 100%;">
+        <GroupCard :group_id="group_id" :brief="true" style="height: 100%;"/>
 
-    </GroupCard>
+      </n-grid-item>
+    </n-grid>
+
 
   </n-card>
   <!--  创建小组模态框-->
@@ -95,7 +99,11 @@
       </template>
       {{ t(strings.no_manageable.description) }}
     </n-alert>
-    <GroupCard v-else :group_id="group.id" v-for="group in managed_groups" :brief="true"/>
+    <n-grid v-else x-gap="12" cols="2 400:2 600:3">
+      <n-grid-item v-for="group in managed_groups">
+        <GroupCard :group_id="group.id" :brief="true" style="height: 100%;"/>
+      </n-grid-item>
+    </n-grid>
 
   </n-card>
 </template>
@@ -114,7 +122,9 @@ import {
   useMessage,
   NDynamicInput,
   NInputNumber,
-  useNotification
+  useNotification,
+  NGrid,
+  NGridItem
 } from 'naive-ui'
 import {inject, onMounted, reactive, ref} from "vue";
 import strings from "../../strings/Home/MyGroup.json";

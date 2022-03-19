@@ -25,7 +25,7 @@ let map = null;
 
 const container = ref(null);
 
-const emit = defineEmits(['update:points', 'new_point', 'delete_point'])
+const emit = defineEmits(['update:points', 'new_point', 'delete_point', 'update:selected'])
 
 const props = defineProps({
   points: {

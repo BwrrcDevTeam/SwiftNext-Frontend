@@ -74,7 +74,7 @@ let user_id = undefined;
 if (route.params.id) {
   user_id = route.params.id;
 } else {
-  user_id = session.value.user.uid;
+  user_id = session.value.user.id;
 }
 
 const user = ref(null);

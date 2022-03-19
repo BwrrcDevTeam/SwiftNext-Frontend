@@ -124,6 +124,11 @@ const routes = [
         name: "user",
         component: () => import("./pages/User.vue"),
     },
+    {
+        path: "/group/:id",
+        name: "group",
+        component: () => import("./pages/Group.vue"),
+    },
     // 走错了
     {
         path: "/:pathMatch(.*)",
