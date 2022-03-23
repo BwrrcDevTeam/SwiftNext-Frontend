@@ -24,7 +24,7 @@
 
 import {inject, onMounted, ref} from "vue";
 import {client, storage, log_api, log_error} from "../apis";
-import {NSkeleton, NThing, NAvatar, NIcon} from 'naive-ui';
+import {NSkeleton, NThing, NAvatar, NIcon, useMessage} from 'naive-ui';
 import UserFilled from "@vicons/carbon/UserFilled";
 
 const t = inject("translate");
@@ -70,6 +70,7 @@ function get_user_description() {
     }
   }
 }
+const message = useMessage();
 
 onMounted(async () => {
   try {

@@ -103,7 +103,6 @@ import strings from "../../strings/Home/IndexReport.json";
 import {inject, onMounted, ref} from "vue";
 import {
   records,
-  notifications as notify_api,
   projects as projects_api,
   log_api,
   log_error,

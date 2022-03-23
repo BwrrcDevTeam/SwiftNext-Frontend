@@ -120,7 +120,8 @@ async function handle_select(key) {
       });
       localStorage.removeItem("saved_password");
       session.value = await update_session();
-      reload()
+      // 刷新页面
+      window.location.reload();
     } catch (e) {
       if (e.response) {
         if (e.response.data.code === 1) {

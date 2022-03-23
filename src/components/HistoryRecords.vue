@@ -2,6 +2,33 @@
   <n-modal v-model:show="deleting" preset="dialog" title="确认删除" content="系统不会保留任何数据，操作无法撤销" positive-text="确认"
            negative-text="取消" @positive-click="confirm_delete">
   </n-modal>
+  <n-modal v-model:show="editing" preset="card" title="编辑填报" style="max-width: 600px;">
+    <n-form-item label="调查点" required>
+      <n-tree-select check-strategy="child" filterable :options="points" v-model:value="data.position"
+                     style="width: 100%;"/>
+    </n-form-item>
+    <n-form-item label="数量" required>
+      <n-input-number min="0" v-model:value="data.num" max="114514" style="width: 100%;"/>
+    </n-form-item>
+    <n-form-item label="时间" required>
+      <n-date-picker v-model:value="data.time" style="width: 100%;" type="datetime"></n-date-picker>
+    </n-form-item>
+    <n-form-item label="协作者">
+      <n-select :options="all_users" multiple v-model:value="data.collaborators" filterable size="large"
+                style="width: 100%"/>
+    </n-form-item>
+    <n-form-item label="备注">
+      <n-input type="textarea" :autosize="{minRows: 3, maxRows: 7}" maxlength="114514" show-count
+               v-model:value="data.description" style="width: 100%;"/>
+    </n-form-item>
+    <template #action>
+      <div style="display: flex; justify-content: space-between">
+        <n-button type="primary" @click="submit">保存</n-button>
+        <n-button @click="editing = false;">取消</n-button>
+      </div>
+
+    </template>
+  </n-modal>
   <div
       style="display: flex;justify-content: center;width: 100%; height: 200px;align-content: center;flex-direction: column"
       v-if="my_records.length === 0 && engaged.length===0">
@@ -22,8 +49,21 @@
 
 <script setup>
 import {h, inject, onMounted, ref} from "vue";
-import {client, records} from "../apis"
-import {NDataTable, NEmpty, NCard, NButton, NModal, useMessage} from "naive-ui";
+import {client, log_api, records} from "../apis"
+import {
+  NDataTable,
+  NEmpty,
+  NCard,
+  NButton,
+  NModal,
+  useMessage,
+  NFormItem,
+  NTreeSelect,
+  NInputNumber,
+  NDatePicker,
+  NInput,
+  NSelect
+} from "naive-ui";
 import {time_to_db, time_from_db} from "../utils";
 
 
@@ -33,6 +73,8 @@ const t = inject("translate");
 
 const session = inject("session");
 
+
+const editing = ref(false);
 
 async function format_records(records) {
   return await Promise.all(records.map(async record => {
@@ -72,8 +114,69 @@ onMounted(async () => {
   } catch (e) {
     message.error(t({cn: "加载历史填报失败: ", en: "Fail to load history records: "}) + t(e.response.data.message))
   }
+  try {
+    available_points.value = (await client.get("/positions/available")).data;
+    available_points.value = available_points.value.map(point => {
+      return {
+        label: point.name,
+        key: point.id,
+        belongs_to: point.belongs_to,
+        longitude: point.longitude,
+        latitude: point.latitude,
+        name: point.name,
+        id: point.id
+      }
+    })
+    session.value.user.groups.forEach(group_id => {
+      client.get("/groups/" + group_id).then((resp) => {
+        let children = [];
+        available_points.value.forEach(point => {
+          if (point.belongs_to === group_id) {
+            children.push({
+              label: point.name,
+              key: point.id
+            })
+          }
+        })
+        points.value.push({
+          label: resp.data.name,
+          key: group_id,
+          children
+        })
+      })
+    })
+  } catch (e) {
+
+  }
+
+  try {
+    log_api("用户", "Client => Server", "获取全部用户")
+    let result = (await client.get("/users")).data
+    result.forEach(user => {
+      if (user.id !== session.value.user.id) {
+        all_users.value.push({
+          name: user.name,
+          id: user.id,
+          label: user.name,
+          value: user.id
+        })
+      }
+
+    })
+    log_api("用户", "Server => Client", "已加载 " + all_users.value.length + " 个用户")
+  } catch (e) {
+
+  }
 
 });
+
+function get_user_name(uid) {
+  let user = all_users.value.find(user => user.id === uid);
+  if (user) {
+    return user.name;
+  }
+  return "";
+}
 
 const columns = [
   {
@@ -102,11 +205,17 @@ const columns = [
             {
               size: "small",
               type: "primary",
-
+              onClick: () => {
+                editing.value = row.id;
+                data.value = Object.assign({}, row);
+                data.value.time = time_from_db(data.value.time).getTime();
+                // data.value.collaborators = data.value.collaborators.map(user => {
+                //   return get_user_name(user);
+                // });
+              }
             },
-            {
-              default: "编辑",
-            }
+
+            () => "编辑",
         ),
         h(
             NButton,
@@ -118,26 +227,19 @@ const columns = [
                 deleting.value = row.id;
               }
             },
-            {
-              default: "删除",
-            }
+            () => "删除",
         )
       ]
     }
   }
 ]
 
-function on_edit() {
-
-}
 
 const deleting = ref(false);
-
 
 async function confirm_delete() {
   if (deleting.value) {
     let sth = await client.delete("/records/" + deleting.value);
-    console.log(sth);
     deleting.value = false;
     await get_project_names();
 
@@ -147,6 +249,50 @@ async function confirm_delete() {
     engaged.value = await format_records(data);
   }
 }
+
+
+// 编辑内容
+
+const points = ref([]);
+const available_points = ref([]);
+const data = ref({});
+const all_users = ref([]);
+
+async function submit() {
+  let form = {
+    num: data.value.num,
+    position: data.value.position,
+    time: time_to_db(data.value.time),
+    description: data.value.description,
+    collaborators: data.value.collaborators,
+  }
+  if (form.num < 0) {
+    message.error("雨燕数量不能小于0");
+  }
+  if (!form.position) {
+    message.error("请选择调查点");
+  }
+  if (!form.time) {
+    message.error("请选择填报时间");
+  }
+  let resp = (await client.patch("/records/" + editing.value, form)).data;
+  my_records.value = await Promise.all(my_records.value.map(async record => {
+    if (record.id === editing.value) {
+      return (await format_records([resp]))[0];
+    }
+    return record;
+  }));
+
+  engaged.value = await Promise.all(engaged.value.map(async record => {
+    if (record.id === editing.value) {
+      return (await format_records([resp]))[0];
+    }
+    return record;
+  }));
+  editing.value = false;
+  message.success("修改成功");
+}
+
 </script>
 
 <style scoped>

@@ -3,14 +3,13 @@ import {encrypt} from "./system";
 // import {check_email} from './users';
 import users from "./users";
 import records from "./records";
-import notifications from "./notifications";
 import projects from "./projects";
 import groups from "./groups";
 import storage from "./storage"
 
 const config = {
     baseURL: "https://console.bwrrc.org.cn/api/",
-    // baseURL: "http://192.168.1.50:8000/", // 调试时使用
+    // baseURL: "http://192.168.1.41:8000/", // 调试时使用
     timeout: 10000,
 }
 
@@ -68,7 +67,6 @@ export {
     log_error,
     config,
     records,
-    notifications,
     projects,
     groups,
     storage

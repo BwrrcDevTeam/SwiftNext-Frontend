@@ -2,7 +2,9 @@
   <!--  用户管理组件-->
   <!--  创建邀请card-->
   <n-modal v-model:show="new_invitation" preset="card" style="max-width: 600px">
+    <n-form-item label="">
 
+    </n-form-item>
   </n-modal>
   <!--  创建用户card-->
   <n-modal v-model:show="new_user" preset="card" style="max-width: 600px" @close="clean_new_form" title="创建用户">

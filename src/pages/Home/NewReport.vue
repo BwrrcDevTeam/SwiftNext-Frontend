@@ -87,7 +87,7 @@ const data = ref({
   "position": null, // 调查点的ID
   // "specific_location": null, // 具体位置
   num: undefined, // 数量
-  time: undefined, // 时间戳
+  time: new Date().getTime(), // 时间戳
 //  可选字段
   description: "", // 备注
 })

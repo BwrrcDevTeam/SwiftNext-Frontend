@@ -1,7 +1,7 @@
 // 本地化模块
 
 function get_lang() {
-    if (typeof(Storage) !== "undefined") {
+    if (typeof (Storage) !== "undefined") {
         // Code for localStorage/sessionStorage.
         if (localStorage.getItem("lang") === null) {
             localStorage.setItem("lang", "cn");
@@ -94,6 +94,16 @@ const Login_strings = {
         description: {
             cn: "这个邮箱没有被注册过! 请检查邮箱是否填写正确",
             en: "This email hasn't been registered yet! Please check the email is correct"
+        }
+    },
+    no_such_name: {
+        title: {
+            cn: "用户不存在 Σ( ° △ °|||)︴",
+            en: "User doesn't exist Σ( ° △ °|||)︴"
+        },
+        description: {
+            cn: "这个用户名没有被注册过! 请检查用户名是否填写正确",
+            en: "This username hasn't been registered yet! Please check the username is correct"
         }
     },
     login: {
@@ -225,9 +235,7 @@ const Header_strings = {
     }
 }
 
-const Register_strings = {
-
-}
+const Register_strings = {}
 
 export {
     translate,

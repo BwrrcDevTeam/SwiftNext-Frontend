@@ -133,6 +133,7 @@ const menu_options = computed(() => {
       icon: renderIcon(AccountCircleOutlined),
     },
   ]
+
   if (session.value.permission === 3) {
     base_options.push({
       // 只有管理员才有的：全站管理

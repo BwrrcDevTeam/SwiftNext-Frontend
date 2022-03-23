@@ -1,7 +1,6 @@
 <template>
 <!--小组管理组件-->
   <n-space justify="space-around">
-    <n-button>创建认领链接</n-button>
     <n-button>创建小组</n-button>
   </n-space>
   <br>

@@ -129,6 +129,14 @@ const routes = [
         name: "group",
         component: () => import("./pages/Group.vue"),
     },
+    {
+        path: "/recovery",
+        name: "recovery",
+        component: () => import("./pages/Recovery.vue"),
+        meta: {
+            no_auth: true
+        },
+    },
     // 走错了
     {
         path: "/:pathMatch(.*)",
