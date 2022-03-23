@@ -24,6 +24,19 @@
     <n-grid-item>
       <n-card title="系统健康状态" class="module">
 
+
+        <n-row>
+          <n-col :span="12">
+            <n-statistic label="有效会话数" :value="sessions">
+
+            </n-statistic>
+          </n-col>
+          <n-col :span="12">
+            <n-statistic label="有效用户数" :value="logins">
+
+            </n-statistic>
+          </n-col>
+        </n-row>
       </n-card>
     </n-grid-item>
     <n-grid-item>
@@ -55,7 +68,7 @@
 </template>
 
 <script setup>
-import { NCard, NGrid, NGridItem, NButton, NStatistic, NRow, NCol, NDatePicker, NScrollbar } from 'naive-ui';
+import {NCard, NGrid, NGridItem, NButton, NStatistic, NRow, NCol, NDatePicker, NScrollbar} from 'naive-ui';
 import {onMounted, ref} from "vue";
 import UserManage from "./UserManage.vue";
 import GroupManage from "./GroupManage.vue";
@@ -67,9 +80,19 @@ const export_range = ref([Date.now() - 24 * 60 * 60 * 1000, Date.now()]);
 
 const count = ref(0);
 
+const sessions = ref(0);
+const logins = ref(0);
+
 onMounted(async () => {
   try {
     count.value = (await client.get("/records/count")).data;
+  } catch (e) {
+    console.error(e);
+  }
+  try {
+    let resp = (await client.get("/system/online")).data;
+    sessions.value = resp.sessions;
+    logins.value = resp.logins;
   } catch (e) {
     console.error(e);
   }
@@ -78,7 +101,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-  .module {
-    height: 100%;
-  }
+.module {
+  height: 100%;
+}
 </style>
