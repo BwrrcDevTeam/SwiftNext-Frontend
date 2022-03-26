@@ -405,7 +405,7 @@ async function create_invitation() {
       console.log(result.data.code)
       invitation_code.value = result.data.code;
     } else {
-      let result = await client.post("/groups/invitation", {
+      let result = await client.post("/groups/invitations", {
         expire_at: days_to_utc_stamp(invitation_valid_time.value),
         groups: [props.group_id],
         permission: new_user_permission.value,

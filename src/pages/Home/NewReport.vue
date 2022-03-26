@@ -8,12 +8,17 @@
     <n-grid-item style="padding: 10px;">
       <n-h3>必填项</n-h3>
       <n-form-item required label="调查点">
-        <n-tree-select check-strategy="child" filterable :options="points" v-model:value="selected_point" style="width: 100%;"/>
+        <n-tree-select check-strategy="child" filterable :options="points" v-model:value="selected_point"
+                       style="width: 100%;"/>
       </n-form-item>
       <n-form-item required label="数量">
         <n-input-number min="0" v-model:value="data.num" max="114514" style="width: 100%;">
 
         </n-input-number>
+      </n-form-item>
+      <n-form-item required label="天气">
+        <n-input v-model:value="data.weather">
+        </n-input>
       </n-form-item>
       <n-form-item required label="时间">
         <n-date-picker v-model:value="data.time" style="width: 100%;" type="datetime"></n-date-picker>
@@ -27,16 +32,36 @@
 
         </n-select>
       </n-form-item>
+      <n-form-item label="巢址数量">
+        <n-input-number v-model:value="data.num_of_nests" min="0" style="width: 100%;"/>
+      </n-form-item>
+      <n-form-item label="巢址高度">
+        <n-input-number v-model:value="data.nest_height" min="0" style="width: 100%;"/>
+      </n-form-item>
+      <n-form-item label="巢址材料">
+        <n-input v-model:value="data.nest_material">
+        </n-input>
+      </n-form-item>
+      <n-form-item label="巢址面积">
+        <n-input-number v-model:value="data.nest_area" min="0" style="width: 100%;"/>
+      </n-form-item>
+      <n-form-item label="返回时间">
+        <n-time-picker v-model:formatted-value="data.return_time" style="width: 100%;"></n-time-picker>
+      </n-form-item>
+      <n-form-item label="返回方向">
+        <n-input v-model:value="data.return_direction"></n-input>
+      </n-form-item>
       <n-form-item label="备注">
         <n-input type="textarea" :autosize="{minRows: 3, maxRows: 7}" maxlength="114514" show-count
                  v-model:value="data.description" style="width: 100%">
         </n-input>
       </n-form-item>
-      <!--      <n-form-item label="附件">-->
-      <!--        <n-upload v-model:file-list="attachments_list" :action="storage.get_upload_url()" @before-upload="check_attachment" :on-remove="delete_attachment" :custom-request="upload_file">-->
-      <!--          <n-button>上传文件</n-button>-->
-      <!--        </n-upload>-->
-      <!--      </n-form-item>-->
+      <n-form-item label="附件">
+        <n-upload v-model:file-list="attachments_list" :action="storage.get_upload_url()"
+                  @before-upload="check_attachment" :on-remove="delete_attachment" @finish="upload_finish">
+          <n-button>上传文件</n-button>
+        </n-upload>
+      </n-form-item>
     </n-grid-item>
   </n-grid>
   <n-space justify="space-around">
@@ -59,6 +84,8 @@ import {
   NTreeSelect,
   NSelect,
   NSpace,
+    NTimePicker,
+    NUpload,
   useMessage,
   useNotification
 } from 'naive-ui'
@@ -90,6 +117,13 @@ const data = ref({
   time: new Date().getTime(), // 时间戳
 //  可选字段
   description: "", // 备注
+  return_time: undefined, // 返回时间
+  nest_height: undefined,
+  nest_area: undefined,
+  nest_material: undefined,
+  num_of_nests: undefined,
+  weather: undefined,
+  return_direction: undefined,
 })
 
 const selected_point = ref(null);
@@ -158,12 +192,28 @@ onMounted(async () => {
   try {
     log_api("草稿", "Client => Server", "询问是否有草稿");
     let draft = (await client.get("/drafts/record")).data;
-    draft.time = time_from_db(draft.time).getTime()
+    if (draft.time === 0) {
+      draft.time = undefined
+    } else {
+      draft.time = time_from_db(draft.time).getTime();
+    }
+
     if (draft.position) {
       selected_point.value = draft.position
     }
     if (draft.collaborators) {
       collaborators.value = draft.collaborators
+    }
+
+    if (draft.attachments) {
+      for (const attachment of draft.attachments) {
+        let resp = (await client.get("/storage/" + attachment)).data;
+        attachments_list.value.push({
+          name: resp.filename,
+          fid: resp.id,
+          key: resp.id
+        })
+      }
     }
 
     data.value = draft;
@@ -236,6 +286,15 @@ onMounted(async () => {
 
 const message = useMessage();
 
+function upload_finish({file, event}) {
+  message.success("文件上传成功");
+  let resp = JSON.parse(event.target.response);
+  // console.log(resp)
+  file.url = storage.get_download_url(resp.id);
+  file.name = resp.filename;
+  file.fid = resp.id;
+}
+
 // 校验表单
 function evaluate(show_error = false) {
   // 计算出表单，并加以验证
@@ -243,7 +302,14 @@ function evaluate(show_error = false) {
     // group: selected_point.value.belongs_to,
     num: data.value.num,
     position: selected_point.value,
-    time: data.value.time
+    time: data.value.time,
+    nest_area: data.value.nest_area,
+    nest_height: data.value.nest_height,
+    nest_material: data.value.nest_material,
+    return_time: data.value.return_time,
+    return_direction: data.value.return_direction,
+    weather: data.value.weather,
+    num_of_nests: data.value.num_of_nests,
   }
   let errored = false;
   if (form.num < 0 && show_error) {
@@ -275,6 +341,7 @@ function evaluate(show_error = false) {
     form.time = undefined;
     errored = true;
   }
+  console.log(form.time)
   form.time = time_to_db(form.time);
   // console.log(form);
   return {form, errored};

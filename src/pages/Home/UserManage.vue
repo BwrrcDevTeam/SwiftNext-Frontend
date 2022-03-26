@@ -1,10 +1,17 @@
 <template>
   <!--  用户管理组件-->
+  <n-modal v-model:show="deleting" preset="dialog" title="确认删除" content="这个操作无法撤销（除了回档）" positive-text="确认" negative-text="取消" @positive-click="confirm_delete"></n-modal>
   <!--  创建邀请card-->
-  <n-modal v-model:show="new_invitation" preset="card" style="max-width: 600px">
-    <n-form-item label="">
+  <n-modal v-model:show="new_invitation" preset="card" style="max-width: 600px" title="创建注册邀请">
+    <n-form-item label="调查小组">
 
     </n-form-item>
+    <n-form-item label="新用户权限">
+
+    </n-form-item>
+    <template #action>
+      <n-button type="primary">确定</n-button>
+    </template>
   </n-modal>
   <!--  创建用户card-->
   <n-modal v-model:show="new_user" preset="card" style="max-width: 600px" @close="clean_new_form" title="创建用户">
@@ -33,13 +40,24 @@
       </n-radio-group>
     </n-form-item>
     <n-form-item label="调查小组">
-      <n-select v-model:value="new_user_form.group" filterable :options="groups">
+      <n-select v-model:value="new_user_form.groups" multiple filterable :options="groups">
       </n-select>
     </n-form-item>
     <template #action>
       <n-button type="primary" @click="create_user">创建</n-button>
     </template>
   </n-modal>
+
+<!--  编辑用户card-->
+  <n-modal v-model:show="editing_user" preset="card" style="max-width: 600px" @close="clean_new_form" title="编辑用户">
+    <n-form-item label="用户名">
+      <n-input v-model:value="editing.name"></n-input>
+    </n-form-item>
+    <n-form-item label="用户权限">
+      <n-select :options="permissions" v-model:value="editing.permission"></n-select>
+    </n-form-item>
+  </n-modal>
+
   <n-space justify="space-around">
     <n-button @click="new_user=true;">创建用户</n-button>
     <n-button @click="new_invitation=true;">创建邀请</n-button>
@@ -59,10 +77,10 @@ import {
   NFormItem,
   NInput,
   NSelect,
-    NRadio,
-    NRadioGroup,
+  NRadio,
+  NRadioGroup,
 } from 'naive-ui'
-import {onMounted, ref} from "vue";
+import {h, onMounted, ref} from "vue";
 import {client, encrypt} from "../../apis";
 
 const new_user = ref(false)
@@ -83,7 +101,41 @@ const columns = [
   },
   {
     title: "操作",
-
+    key: "actions",
+    render(row) {
+      return [
+        h(
+            NButton,
+            {
+              size:"small",
+              onClick() {
+                editing_user.value = true;
+                console.log(row)
+                editing.value = {
+                  ...row,
+                };
+              }
+            },
+            {
+              default: () => "编辑"
+            }
+        ),
+          h(
+              NButton,
+              {
+                type:"error",
+                size: "small",
+                onClick() {
+                  is_deleting.value = true;
+                  deleting.value = row;
+                }
+              },
+              {
+                default: () => "删除"
+              }
+          )
+      ]
+    }
   }
 ]
 
@@ -104,8 +156,9 @@ async function parse_users(data) {
     return {
       name: user.name,
       email: user.email,
-      group: user.group,
+      groups: user.groups,
       id: user.id,
+      permission: user.permission,
       group_name: user.group_name,
     }
   }))
@@ -133,7 +186,7 @@ onMounted(async () => {
 const new_user_form = ref({
   name: "",
   email: "",
-  group: undefined,
+  groups: [],
   password: "",
   re_password: "",
   permission: 1,
@@ -199,6 +252,38 @@ async function evaluate_new_user_form() {
 
 async function create_user() {
   let form = await evaluate_new_user_form();
+}
+
+const permissions = [
+  {
+    value: 1,
+    label: "志愿者"
+  },
+  {
+    value: 2,
+    label: "小组长"
+  },
+  {
+    value: 3,
+    label: "管理员"
+  }
+]
+
+const editing_user = ref(false);
+const editing = ref(undefined);
+const is_deleting = ref(false);
+const deleting = ref(undefined);
+
+async function confirm_delete() {
+  if (deleting.value) {
+    try {
+      await client.delete("/users/" + deleting.value.id)
+      users.value = users.value.filter(user => user.id !== deleting.value.id)
+      is_deleting.value = false
+    } catch (e) {
+      console.log(e)
+    }
+  }
 }
 </script>
 

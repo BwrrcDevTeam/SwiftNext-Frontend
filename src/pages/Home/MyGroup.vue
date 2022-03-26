@@ -157,11 +157,13 @@ async function check_invitation() {
     return false;
   }
   try {
-    let result = await groups.check_invitation(invitation_code.value)
+    let result = await client.get("/groups/invitations/" + invitation_code.value);
+    let group = await client.get("/groups/" + result.groups[0]);
+
     invitation_feedback.status = 'success';
     message.success(t({
-      cn: `来自小组"${result.data.group.name}"的邀请！`,
-      en: `Invitation from group "${result.data.group.name}"!`,
+      cn: `来自小组"${group.name}"的邀请！`,
+      en: `Invitation from group "${group.name}"!`,
     }))
     return true;
   } catch (e) {
@@ -176,10 +178,10 @@ async function check_invitation() {
 async function join_group() {
   if (await check_invitation()) {
     try {
-      let result = await groups.apply_invitation(invitation_code.value);
+      let result = (await client.get("/groups/invitations/" + invitation_code.value + "/apply")).data;
       message.success(t({
-        "cn": `成功加入小组"${result.data.group.name}"！`,
-        "en": `Successfully joined group "${result.data.group.name}"!`,
+        "cn": `成功加入小组"${result.groups[0].name}"！`,
+        "en": `Successfully joined group "${result.groups[0].name}"!`,
       }))
       show_join_group.value = false;
     } catch (e) {

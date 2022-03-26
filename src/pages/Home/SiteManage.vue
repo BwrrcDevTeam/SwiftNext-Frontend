@@ -1,5 +1,5 @@
 <template>
-  <n-grid cols="1 400:1 600:2 800:2 1000:3" :y-gap="10" :x-gap="10">
+  <n-grid cols="1 400:1 600:2 2000:3" :y-gap="10" :x-gap="10">
     <n-grid-item>
       <n-card title="项目管理" class="module">
         <n-scrollbar style="max-height: 500px">

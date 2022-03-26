@@ -1,30 +1,69 @@
 <template>
-  <n-modal v-model:show="deleting" preset="dialog" title="确认删除" content="系统不会保留任何数据，操作无法撤销" positive-text="确认"
+  <n-modal v-model:show="is_deleting" preset="dialog" title="确认删除" content="系统不会保留任何数据，操作无法撤销" positive-text="确认"
            negative-text="取消" @positive-click="confirm_delete">
   </n-modal>
-  <n-modal v-model:show="editing" preset="card" title="编辑填报" style="max-width: 600px;">
-    <n-form-item label="调查点" required>
-      <n-tree-select check-strategy="child" filterable :options="points" v-model:value="data.position"
-                     style="width: 100%;"/>
-    </n-form-item>
-    <n-form-item label="数量" required>
-      <n-input-number min="0" v-model:value="data.num" max="114514" style="width: 100%;"/>
-    </n-form-item>
-    <n-form-item label="时间" required>
-      <n-date-picker v-model:value="data.time" style="width: 100%;" type="datetime"></n-date-picker>
-    </n-form-item>
-    <n-form-item label="协作者">
-      <n-select :options="all_users" multiple v-model:value="data.collaborators" filterable size="large"
-                style="width: 100%"/>
-    </n-form-item>
-    <n-form-item label="备注">
-      <n-input type="textarea" :autosize="{minRows: 3, maxRows: 7}" maxlength="114514" show-count
-               v-model:value="data.description" style="width: 100%;"/>
-    </n-form-item>
+  <n-modal v-model:show="is_editing" preset="card" title="编辑填报" style="max-width: 1000px;">
+    <n-grid cols="1 800:2">
+      <n-grid-item style="padding: 10px;">
+        <n-form-item label="调查点" required>
+          <n-tree-select check-strategy="child" filterable :options="points" v-model:value="data.position"
+                         style="width: 100%;"/>
+        </n-form-item>
+        <n-form-item label="数量" required>
+          <n-input-number min="0" v-model:value="data.num" max="114514" style="width: 100%;"/>
+        </n-form-item>
+        <n-form-item label="时间" required>
+          <n-date-picker v-model:value="data.time" style="width: 100%;" type="datetime"></n-date-picker>
+        </n-form-item>
+        <n-form-item label="协作者">
+          <n-select :options="all_users" multiple v-model:value="data.collaborators" filterable size="large"
+                    style="width: 100%"/>
+        </n-form-item>
+        <n-form-item required label="天气">
+          <n-input v-model:value="data.weather">
+          </n-input>
+        </n-form-item>
+      </n-grid-item>
+      <n-grid-item style="padding: 10px;">
+
+        <n-form-item label="巢址数量">
+          <n-input-number v-model:value="data.num_of_nests" min="0" style="width: 100%;"/>
+        </n-form-item>
+        <n-form-item label="巢址高度">
+          <n-input-number v-model:value="data.nest_height" min="0" style="width: 100%;"/>
+        </n-form-item>
+        <n-form-item label="巢址材料">
+          <n-input v-model:value="data.nest_material">
+          </n-input>
+        </n-form-item>
+        <n-form-item label="巢址面积">
+          <n-input-number v-model:value="data.nest_area" min="0" style="width: 100%;"/>
+        </n-form-item>
+        <n-form-item label="返回时间">
+          <n-time-picker v-model:formatted-value="data.return_time" style="width: 100%;"></n-time-picker>
+        </n-form-item>
+        <n-form-item label="返回方向">
+          <n-input v-model:value="data.return_direction"></n-input>
+        </n-form-item>
+
+        <n-form-item label="备注">
+          <n-input type="textarea" :autosize="{minRows: 3, maxRows: 7}" maxlength="114514" show-count
+                   v-model:value="data.description" style="width: 100%;"/>
+        </n-form-item>
+        <n-form-item label="附件">
+          <n-upload v-model:file-list="data.attachments_list" :action="storage.get_upload_url()"
+                    @before-upload="check_attachment" :on-remove="delete_attachment" @finish="upload_finish">
+            <n-button>上传文件</n-button>
+          </n-upload>
+        </n-form-item>
+
+      </n-grid-item>
+    </n-grid>
+
     <template #action>
       <div style="display: flex; justify-content: space-between">
         <n-button type="primary" @click="submit">保存</n-button>
-        <n-button @click="editing = false;">取消</n-button>
+        <n-button @click="is_editing = false;">取消</n-button>
       </div>
 
     </template>
@@ -48,7 +87,7 @@
 </template>
 
 <script setup>
-import {h, inject, onMounted, ref} from "vue";
+import {computed, h, inject, onMounted, ref} from "vue";
 import {client, log_api, records} from "../apis"
 import {
   NDataTable,
@@ -56,15 +95,21 @@ import {
   NCard,
   NButton,
   NModal,
+  NGrid,
+  NGridItem,
+  NTimePicker,
   useMessage,
   NFormItem,
   NTreeSelect,
   NInputNumber,
   NDatePicker,
   NInput,
-  NSelect
+  NSelect,
+    NUpload
 } from "naive-ui";
 import {time_to_db, time_from_db} from "../utils";
+
+import {storage} from "../apis";
 
 
 const my_records = ref([]);
@@ -205,10 +250,22 @@ const columns = [
             {
               size: "small",
               type: "primary",
-              onClick: () => {
+              onClick: async () => {
+                is_editing.value = true;
                 editing.value = row.id;
                 data.value = Object.assign({}, row);
                 data.value.time = time_from_db(data.value.time).getTime();
+                data.value.attachments_list = [];
+                console.log(row.attachments)
+                for (const attachment of row.attachments) {
+                  let resp = (await client.get("/storage/" + attachment)).data;
+                  data.value.attachments_list.push({
+                    name: resp.filename,
+                    url: storage.get_download_url(resp.id),
+                    fid: resp.id,
+                    key: resp.id
+                  });
+                }
                 // data.value.collaborators = data.value.collaborators.map(user => {
                 //   return get_user_name(user);
                 // });
@@ -224,6 +281,7 @@ const columns = [
               type: "error",
               style: "margin-left: 10px",
               onClick: () => {
+                is_deleting.value = true;
                 deleting.value = row.id;
               }
             },
@@ -235,6 +293,8 @@ const columns = [
 ]
 
 
+const is_editing = ref(false);
+const is_deleting = ref(false);
 const deleting = ref(false);
 
 async function confirm_delete() {
@@ -265,6 +325,14 @@ async function submit() {
     time: time_to_db(data.value.time),
     description: data.value.description,
     collaborators: data.value.collaborators,
+    nest_area: data.value.nest_area,
+    nest_height: data.value.nest_height,
+    nest_material: data.value.nest_material,
+    return_time: data.value.return_time,
+    return_direction: data.value.return_direction,
+    weather: data.value.weather,
+    num_of_nests: data.value.num_of_nests,
+    attachments: data.value.attachments_list.map(attachment => attachment.fid),
   }
   if (form.num < 0) {
     message.error("雨燕数量不能小于0");
@@ -290,8 +358,42 @@ async function submit() {
     return record;
   }));
   editing.value = false;
+  is_editing.value = false;
   message.success("修改成功");
 }
+
+function check_attachment({file, file_list}) {
+  // 最大附件大小为200M
+  let max_size = 200 * 1024 * 1024;
+  if (file.file.size > max_size) {
+    message.error("单个附件大小不能超过 200M !");
+    return false;
+  }
+  return true;
+}
+
+async function delete_attachment({file, file_list}) {
+  if (file.status === 'finished') {
+    try {
+      await storage.delete_file(file.fid);
+      return true;
+    } catch (e) {
+      message.error("删除附件失败，请重试");
+      return false;
+    }
+  }
+  return true;
+}
+
+function upload_finish({file, event}) {
+  message.success("文件上传成功");
+  let resp = JSON.parse(event.target.response);
+  // console.log(resp)
+  file.url = storage.get_download_url(resp.id);
+  file.name = resp.filename;
+  file.fid = resp.id;
+}
+
 
 </script>
 
