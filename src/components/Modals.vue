@@ -15,11 +15,11 @@
         {{ t(Modal_strings.contact_modal_line4) }}:
         <br>
         {{props.full_traceback}}
-        <template #footer>
-          <span style="color: #adadad">
-            {{ t(Modal_strings.contact_modal_footer) }} :(
-          </span>
-        </template>
+<!--        <template #footer>-->
+<!--          <span style="color: #adadad">-->
+<!--            {{ t(Modal_strings.contact_modal_footer) }} :(-->
+<!--          </span>-->
+<!--        </template>-->
       </n-card>
     </n-modal>
     <n-modal :show="props.show_login">

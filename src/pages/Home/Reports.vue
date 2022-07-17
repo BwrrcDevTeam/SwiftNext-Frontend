@@ -24,6 +24,11 @@
       <HistoryRecords/>
     </n-card>
   </n-collapse-transition>
+  <n-collapse-transition :show="route.name!=='home_reports_new' && session.user.permission>=2">
+    <n-card title="本组填报" style="margin-top: 20px;">
+      <GroupRecords/>
+    </n-card>
+  </n-collapse-transition>
 
 </template>
 
@@ -51,6 +56,7 @@ import {useRoute, useRouter} from "vue-router";
 import LoginButton from "../../components/LoginButton.vue";
 
 const t = inject("translate")
+const session = inject("session");
 
 const message = useMessage();
 
